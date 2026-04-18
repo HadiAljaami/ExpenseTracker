@@ -1,0 +1,413 @@
+2026-04-18 19:10:39.747 +03:00 [INF] Executed DbCommand (149ms) [Parameters=[], CommandType='"Text"', CommandTimeout='60']
+CREATE DATABASE [ExpenseTrackerDb];
+2026-04-18 19:10:39.941 +03:00 [INF] Executed DbCommand (136ms) [Parameters=[], CommandType='"Text"', CommandTimeout='60']
+IF SERVERPROPERTY('EngineEdition') <> 5
+BEGIN
+    ALTER DATABASE [ExpenseTrackerDb] SET READ_COMMITTED_SNAPSHOT ON;
+END;
+2026-04-18 19:10:39.960 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-04-18 19:10:40.036 +03:00 [INF] Executed DbCommand (9ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [__EFMigrationsHistory] (
+    [MigrationId] nvarchar(150) NOT NULL,
+    [ProductVersion] nvarchar(32) NOT NULL,
+    CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+);
+2026-04-18 19:10:40.039 +03:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-04-18 19:10:40.059 +03:00 [INF] Executed DbCommand (15ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-04-18 19:10:40.073 +03:00 [INF] Executed DbCommand (9ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-04-18 19:10:40.094 +03:00 [INF] Applying migration '20260418160707_InitialCreate'.
+2026-04-18 19:10:40.184 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Categories] (
+    [Id] int NOT NULL IDENTITY,
+    [Name] nvarchar(max) NOT NULL,
+    [Icon] nvarchar(max) NOT NULL,
+    [Color] nvarchar(max) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NULL,
+    CONSTRAINT [PK_Categories] PRIMARY KEY ([Id])
+);
+2026-04-18 19:10:40.189 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Users] (
+    [Id] int NOT NULL IDENTITY,
+    [FullName] nvarchar(100) NOT NULL,
+    [Email] nvarchar(150) NOT NULL,
+    [PasswordHash] nvarchar(max) NOT NULL,
+    [Role] nvarchar(max) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NULL,
+    CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
+);
+2026-04-18 19:10:40.194 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Alerts] (
+    [Id] int NOT NULL IDENTITY,
+    [UserId] int NOT NULL,
+    [Title] nvarchar(200) NOT NULL,
+    [Message] nvarchar(1000) NOT NULL,
+    [Type] nvarchar(max) NOT NULL,
+    [IsRead] bit NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NULL,
+    CONSTRAINT [PK_Alerts] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Alerts_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+);
+2026-04-18 19:10:40.202 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Budgets] (
+    [Id] int NOT NULL IDENTITY,
+    [UserId] int NOT NULL,
+    [CategoryId] int NULL,
+    [MonthlyLimit] decimal(18,2) NOT NULL,
+    [Month] int NOT NULL,
+    [Year] int NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NULL,
+    CONSTRAINT [PK_Budgets] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Budgets_Categories_CategoryId] FOREIGN KEY ([CategoryId]) REFERENCES [Categories] ([Id]) ON DELETE NO ACTION,
+    CONSTRAINT [FK_Budgets_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+);
+2026-04-18 19:10:40.214 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Expenses] (
+    [Id] int NOT NULL IDENTITY,
+    [UserId] int NOT NULL,
+    [CategoryId] int NOT NULL,
+    [Amount] decimal(18,2) NOT NULL,
+    [Description] nvarchar(500) NOT NULL,
+    [Date] datetime2 NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NULL,
+    CONSTRAINT [PK_Expenses] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Expenses_Categories_CategoryId] FOREIGN KEY ([CategoryId]) REFERENCES [Categories] ([Id]) ON DELETE NO ACTION,
+    CONSTRAINT [FK_Expenses_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+);
+2026-04-18 19:10:40.272 +03:00 [INF] Executed DbCommand (55ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Color', N'CreatedAt', N'Icon', N'Name', N'UpdatedAt') AND [object_id] = OBJECT_ID(N'[Categories]'))
+    SET IDENTITY_INSERT [Categories] ON;
+INSERT INTO [Categories] ([Id], [Color], [CreatedAt], [Icon], [Name], [UpdatedAt])
+VALUES (1, N'#FF6B6B', '2026-04-18T16:07:06.0294014Z', N'🍔', N'Food & Dining', NULL),
+(2, N'#4ECDC4', '2026-04-18T16:07:06.0294017Z', N'🚗', N'Transport', NULL),
+(3, N'#45B7D1', '2026-04-18T16:07:06.0294019Z', N'💡', N'Bills & Utilities', NULL),
+(4, N'#96CEB4', '2026-04-18T16:07:06.0294063Z', N'🎬', N'Entertainment', NULL),
+(5, N'#FFEAA7', '2026-04-18T16:07:06.0294065Z', N'🏥', N'Healthcare', NULL),
+(6, N'#DDA0DD', '2026-04-18T16:07:06.0294067Z', N'🛍️', N'Shopping', NULL),
+(7, N'#98D8C8', '2026-04-18T16:07:06.0294068Z', N'📚', N'Education', NULL),
+(8, N'#B0BEC5', '2026-04-18T16:07:06.0294070Z', N'📦', N'Other', NULL);
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Color', N'CreatedAt', N'Icon', N'Name', N'UpdatedAt') AND [object_id] = OBJECT_ID(N'[Categories]'))
+    SET IDENTITY_INSERT [Categories] OFF;
+2026-04-18 19:10:40.280 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Alerts_UserId] ON [Alerts] ([UserId]);
+2026-04-18 19:10:40.283 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Budgets_CategoryId] ON [Budgets] ([CategoryId]);
+2026-04-18 19:10:40.286 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Budgets_UserId] ON [Budgets] ([UserId]);
+2026-04-18 19:10:40.290 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Expenses_CategoryId] ON [Expenses] ([CategoryId]);
+2026-04-18 19:10:40.293 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Expenses_UserId] ON [Expenses] ([UserId]);
+2026-04-18 19:10:40.296 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX [IX_Users_Email] ON [Users] ([Email]);
+2026-04-18 19:10:40.300 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260418160707_InitialCreate', N'8.0.4');
+2026-04-18 19:11:30.444 +03:00 [INF] Executed DbCommand (24ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-04-18 19:11:30.524 +03:00 [INF] Executed DbCommand (21ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-04-18 19:11:30.535 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-04-18 19:11:30.539 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-04-18 19:11:30.558 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-04-18 19:11:30.582 +03:00 [INF] No migrations were applied. The database is already up to date.
+2026-04-18 19:11:30.785 +03:00 [INF] User profile is available. Using 'C:\Users\HADI AL-JAAMI\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-04-18 19:11:30.882 +03:00 [INF] Now listening on: http://localhost:5000
+2026-04-18 19:11:30.889 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-04-18 19:11:30.892 +03:00 [INF] Hosting environment: Production
+2026-04-18 19:11:30.896 +03:00 [INF] Content root path: D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API
+2026-04-18 19:11:53.571 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/ - null null
+2026-04-18 19:11:53.669 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/ - 301 0 null 104.0964ms
+2026-04-18 19:11:53.676 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/index.html - null null
+2026-04-18 19:11:53.777 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/index.html - 200 null text/html;charset=utf-8 100.9146ms
+2026-04-18 19:11:53.819 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/swagger-ui.css - null null
+2026-04-18 19:11:53.827 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/swagger-ui-standalone-preset.js - null null
+2026-04-18 19:11:53.827 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/swagger-ui-bundle.js - null null
+2026-04-18 19:11:53.861 +03:00 [INF] Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+2026-04-18 19:11:53.861 +03:00 [INF] Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+2026-04-18 19:11:53.873 +03:00 [INF] Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+2026-04-18 19:11:53.881 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/swagger-ui-standalone-preset.js - 200 312163 text/javascript 54.1529ms
+2026-04-18 19:11:53.882 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/swagger-ui.css - 200 144929 text/css 62.6357ms
+2026-04-18 19:11:53.893 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/swagger-ui-bundle.js - 200 1061536 text/javascript 66.5274ms
+2026-04-18 19:11:54.224 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/swagger/v1/swagger.json - null null
+2026-04-18 19:11:54.331 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/favicon-32x32.png - null null
+2026-04-18 19:11:54.335 +03:00 [INF] Sending file. Request path: '/favicon-32x32.png'. Physical path: 'N/A'
+2026-04-18 19:11:54.338 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/favicon-32x32.png - 200 628 image/png 8.9168ms
+2026-04-18 19:11:54.498 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 273.5507ms
+2026-04-18 21:16:27.983 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/Auth/register - application/json 75
+2026-04-18 21:16:27.992 +03:00 [INF] CORS policy execution successful.
+2026-04-18 21:16:28.596 +03:00 [INF] Executing endpoint 'API.Controllers.AuthController.Register (API)'
+2026-04-18 21:16:28.680 +03:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(Application.DTOs.Auth.RegisterDto) on controller API.Controllers.AuthController (API).
+2026-04-18 21:16:28.893 +03:00 [INF] Executing BadRequestObjectResult, writing value of type 'Microsoft.AspNetCore.Mvc.ValidationProblemDetails'.
+2026-04-18 21:16:28.947 +03:00 [INF] Executed action API.Controllers.AuthController.Register (API) in 252.3077ms
+2026-04-18 21:16:28.951 +03:00 [INF] Executed endpoint 'API.Controllers.AuthController.Register (API)'
+2026-04-18 21:16:28.956 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/Auth/register - 400 null application/problem+json; charset=utf-8 973.5829ms
+2026-04-18 21:16:50.244 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/Auth/register - application/json 77
+2026-04-18 21:16:50.249 +03:00 [INF] CORS policy execution successful.
+2026-04-18 21:16:50.252 +03:00 [INF] Executing endpoint 'API.Controllers.AuthController.Register (API)'
+2026-04-18 21:16:50.254 +03:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(Application.DTOs.Auth.RegisterDto) on controller API.Controllers.AuthController (API).
+2026-04-18 21:16:50.265 +03:00 [INF] Executing BadRequestObjectResult, writing value of type 'Microsoft.AspNetCore.Mvc.ValidationProblemDetails'.
+2026-04-18 21:16:50.269 +03:00 [INF] Executed action API.Controllers.AuthController.Register (API) in 10.6793ms
+2026-04-18 21:16:50.271 +03:00 [INF] Executed endpoint 'API.Controllers.AuthController.Register (API)'
+2026-04-18 21:16:50.275 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/Auth/register - 400 null application/problem+json; charset=utf-8 30.9832ms
+2026-04-18 21:17:13.867 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/Auth/register - application/json 77
+2026-04-18 21:17:13.887 +03:00 [INF] CORS policy execution successful.
+2026-04-18 21:17:13.891 +03:00 [INF] Executing endpoint 'API.Controllers.AuthController.Register (API)'
+2026-04-18 21:17:13.896 +03:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(Application.DTOs.Auth.RegisterDto) on controller API.Controllers.AuthController (API).
+2026-04-18 21:17:14.825 +03:00 [INF] Executed DbCommand (85ms) [Parameters=[@__email_0='?' (Size = 150)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [u].[Id], [u].[CreatedAt], [u].[Email], [u].[FullName], [u].[PasswordHash], [u].[Role], [u].[UpdatedAt]
+FROM [Users] AS [u]
+WHERE [u].[Email] = @__email_0
+2026-04-18 21:17:16.072 +03:00 [INF] Executed DbCommand (17ms) [Parameters=[@p0='?' (DbType = DateTime2), @p1='?' (Size = 150), @p2='?' (Size = 100), @p3='?' (Size = 4000), @p4='?' (Size = 4000), @p5='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Users] ([CreatedAt], [Email], [FullName], [PasswordHash], [Role], [UpdatedAt])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+2026-04-18 21:17:16.209 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Application.DTOs.Auth.AuthResponseDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-04-18 21:17:16.240 +03:00 [INF] Executed action API.Controllers.AuthController.Register (API) in 2341.7725ms
+2026-04-18 21:17:16.246 +03:00 [INF] Executed endpoint 'API.Controllers.AuthController.Register (API)'
+2026-04-18 21:17:16.262 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/Auth/register - 200 null application/json; charset=utf-8 2394.9321ms
+2026-04-18 21:18:09.235 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/Alerts - null null
+2026-04-18 21:18:09.283 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-04-18 21:18:09.305 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-04-18 21:18:09.309 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/Alerts - 401 0 null 73.8267ms
+2026-04-18 21:25:57.869 +03:00 [INF] Application is shutting down...
+2026-04-18 21:34:56.552 +03:00 [INF] Executed DbCommand (26ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-04-18 21:34:56.755 +03:00 [INF] Executed DbCommand (49ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-04-18 21:34:56.770 +03:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-04-18 21:34:56.777 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-04-18 21:34:56.827 +03:00 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-04-18 21:34:56.879 +03:00 [INF] No migrations were applied. The database is already up to date.
+2026-04-18 21:34:57.035 +03:00 [INF] User profile is available. Using 'C:\Users\HADI AL-JAAMI\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-04-18 21:34:57.082 +03:00 [INF] Now listening on: http://localhost:5000
+2026-04-18 21:34:57.085 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-04-18 21:34:57.086 +03:00 [INF] Hosting environment: Production
+2026-04-18 21:34:57.087 +03:00 [INF] Content root path: D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API
+2026-04-18 21:35:01.213 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/index.html - null null
+2026-04-18 21:35:01.383 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/index.html - 200 null text/html;charset=utf-8 172.9397ms
+2026-04-18 21:35:02.611 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/swagger/v1/swagger.json - null null
+2026-04-18 21:35:02.797 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 185.4949ms
+2026-04-18 21:35:33.713 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/Categories - null null
+2026-04-18 21:35:33.789 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-04-18 21:35:33.797 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-04-18 21:35:33.801 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/Categories - 401 0 null 88.0642ms
+2026-04-18 21:37:12.398 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/Categories - null null
+2026-04-18 21:37:12.557 +03:00 [INF] Executing endpoint 'API.Controllers.CategoriesController.GetAll (API)'
+2026-04-18 21:37:12.585 +03:00 [INF] Route matched with {action = "GetAll", controller = "Categories"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetAll() on controller API.Controllers.CategoriesController (API).
+2026-04-18 21:37:13.071 +03:00 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Categories] AS [c]
+2026-04-18 21:37:13.219 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Collections.Generic.List`1[[Application.Interfaces.CategoryDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-04-18 21:37:13.261 +03:00 [INF] Executed action API.Controllers.CategoriesController.GetAll (API) in 655.1538ms
+2026-04-18 21:37:13.269 +03:00 [INF] Executed endpoint 'API.Controllers.CategoriesController.GetAll (API)'
+2026-04-18 21:37:13.299 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/Categories - 200 null application/json; charset=utf-8 901.3673ms
+2026-04-18 21:40:00.486 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/Budgets - application/json 74
+2026-04-18 21:40:00.492 +03:00 [INF] CORS policy execution successful.
+2026-04-18 21:40:00.499 +03:00 [INF] Executing endpoint 'API.Controllers.BudgetsController.Create (API)'
+2026-04-18 21:40:00.513 +03:00 [INF] Route matched with {action = "Create", controller = "Budgets"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Application.DTOs.Budgets.CreateBudgetDto) on controller API.Controllers.BudgetsController (API).
+2026-04-18 21:40:00.889 +03:00 [INF] Executed DbCommand (33ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = DateTime2), @p2='?' (DbType = Int32), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Budgets] ([CategoryId], [CreatedAt], [Month], [MonthlyLimit], [UpdatedAt], [UserId], [Year])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+2026-04-18 21:40:01.055 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__from_Value_1='?' (DbType = DateTime2), @__to_Value_2='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e].[Id], [e].[Amount], [e].[CategoryId], [e].[CreatedAt], [e].[Date], [e].[Description], [e].[UpdatedAt], [e].[UserId], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Expenses] AS [e]
+INNER JOIN [Categories] AS [c] ON [e].[CategoryId] = [c].[Id]
+WHERE [e].[UserId] = @__userId_0 AND [e].[Date] >= @__from_Value_1 AND [e].[Date] <= @__to_Value_2
+2026-04-18 21:40:01.082 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Categories] AS [c]
+WHERE [c].[Id] = @__p_0
+2026-04-18 21:40:01.097 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Application.DTOs.Budgets.BudgetResponseDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-04-18 21:40:01.108 +03:00 [INF] Executed action API.Controllers.BudgetsController.Create (API) in 590.8597ms
+2026-04-18 21:40:01.110 +03:00 [INF] Executed endpoint 'API.Controllers.BudgetsController.Create (API)'
+2026-04-18 21:40:01.113 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/Budgets - 200 null application/json; charset=utf-8 627.1674ms
+2026-04-18 21:40:46.431 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/Budgets - application/json 78
+2026-04-18 21:40:46.435 +03:00 [INF] CORS policy execution successful.
+2026-04-18 21:40:46.436 +03:00 [INF] Executing endpoint 'API.Controllers.BudgetsController.Create (API)'
+2026-04-18 21:40:46.438 +03:00 [INF] Route matched with {action = "Create", controller = "Budgets"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Application.DTOs.Budgets.CreateBudgetDto) on controller API.Controllers.BudgetsController (API).
+2026-04-18 21:40:46.460 +03:00 [INF] Executed DbCommand (8ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = DateTime2), @p2='?' (DbType = Int32), @p3='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p4='?' (DbType = DateTime2), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Budgets] ([CategoryId], [CreatedAt], [Month], [MonthlyLimit], [UpdatedAt], [UserId], [Year])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+2026-04-18 21:40:46.475 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__from_Value_1='?' (DbType = DateTime2), @__to_Value_2='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e].[Id], [e].[Amount], [e].[CategoryId], [e].[CreatedAt], [e].[Date], [e].[Description], [e].[UpdatedAt], [e].[UserId], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Expenses] AS [e]
+INNER JOIN [Categories] AS [c] ON [e].[CategoryId] = [c].[Id]
+WHERE [e].[UserId] = @__userId_0 AND [e].[Date] >= @__from_Value_1 AND [e].[Date] <= @__to_Value_2
+2026-04-18 21:40:46.481 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Application.DTOs.Budgets.BudgetResponseDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-04-18 21:40:46.483 +03:00 [INF] Executed action API.Controllers.BudgetsController.Create (API) in 42.8946ms
+2026-04-18 21:40:46.484 +03:00 [INF] Executed endpoint 'API.Controllers.BudgetsController.Create (API)'
+2026-04-18 21:40:46.486 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/Budgets - 200 null application/json; charset=utf-8 54.2414ms
+2026-04-18 21:42:10.924 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/Expenses - application/json 102
+2026-04-18 21:42:10.928 +03:00 [INF] CORS policy execution successful.
+2026-04-18 21:42:10.929 +03:00 [INF] Executing endpoint 'API.Controllers.ExpensesController.Create (API)'
+2026-04-18 21:42:10.933 +03:00 [INF] Route matched with {action = "Create", controller = "Expenses"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Application.DTOs.Expenses.CreateExpenseDto) on controller API.Controllers.ExpensesController (API).
+2026-04-18 21:42:10.972 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Categories] AS [c]
+WHERE [c].[Id] = @__p_0
+2026-04-18 21:42:11.012 +03:00 [INF] Executed DbCommand (7ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (DbType = DateTime2), @p3='?' (DbType = DateTime2), @p4='?' (Size = 500), @p5='?' (DbType = DateTime2), @p6='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Expenses] ([Amount], [CategoryId], [CreatedAt], [Date], [Description], [UpdatedAt], [UserId])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+2026-04-18 21:42:11.033 +03:00 [INF] Executed DbCommand (11ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__from_Value_1='?' (DbType = DateTime2), @__to_Value_2='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e].[Id], [e].[Amount], [e].[CategoryId], [e].[CreatedAt], [e].[Date], [e].[Description], [e].[UpdatedAt], [e].[UserId], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Expenses] AS [e]
+INNER JOIN [Categories] AS [c] ON [e].[CategoryId] = [c].[Id]
+WHERE [e].[UserId] = @__userId_0 AND [e].[Date] >= @__from_Value_1 AND [e].[Date] <= @__to_Value_2
+2026-04-18 21:42:11.076 +03:00 [INF] Executed DbCommand (14ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__month_1='?' (DbType = Int32), @__year_2='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT [b].[Id], [b].[CategoryId], [b].[CreatedAt], [b].[Month], [b].[MonthlyLimit], [b].[UpdatedAt], [b].[UserId], [b].[Year], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Budgets] AS [b]
+LEFT JOIN [Categories] AS [c] ON [b].[CategoryId] = [c].[Id]
+WHERE [b].[UserId] = @__userId_0 AND [b].[Month] = @__month_1 AND [b].[Year] = @__year_2
+2026-04-18 21:42:11.122 +03:00 [INF] Executed DbCommand (8ms) [Parameters=[@p0='?' (DbType = DateTime2), @p1='?' (DbType = Boolean), @p2='?' (Size = 1000), @p3='?' (Size = 200), @p4='?' (Size = 4000), @p5='?' (DbType = DateTime2), @p6='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Alerts] ([CreatedAt], [IsRead], [Message], [Title], [Type], [UpdatedAt], [UserId])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+2026-04-18 21:42:11.139 +03:00 [INF] Executing CreatedAtActionResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Application.DTOs.Expenses.ExpenseResponseDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-04-18 21:42:11.193 +03:00 [INF] Executed action API.Controllers.ExpensesController.Create (API) in 257.3611ms
+2026-04-18 21:42:11.198 +03:00 [INF] Executed endpoint 'API.Controllers.ExpensesController.Create (API)'
+2026-04-18 21:42:11.201 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/Expenses - 201 null application/json; charset=utf-8 277.5971ms
+2026-04-18 21:42:52.508 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/Expenses - application/json 93
+2026-04-18 21:42:52.512 +03:00 [INF] CORS policy execution successful.
+2026-04-18 21:42:52.514 +03:00 [INF] Executing endpoint 'API.Controllers.ExpensesController.Create (API)'
+2026-04-18 21:42:52.516 +03:00 [INF] Route matched with {action = "Create", controller = "Expenses"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Application.DTOs.Expenses.CreateExpenseDto) on controller API.Controllers.ExpensesController (API).
+2026-04-18 21:42:52.529 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Categories] AS [c]
+WHERE [c].[Id] = @__p_0
+2026-04-18 21:42:52.536 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (DbType = DateTime2), @p3='?' (DbType = DateTime2), @p4='?' (Size = 500), @p5='?' (DbType = DateTime2), @p6='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Expenses] ([Amount], [CategoryId], [CreatedAt], [Date], [Description], [UpdatedAt], [UserId])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+2026-04-18 21:42:52.545 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__from_Value_1='?' (DbType = DateTime2), @__to_Value_2='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e].[Id], [e].[Amount], [e].[CategoryId], [e].[CreatedAt], [e].[Date], [e].[Description], [e].[UpdatedAt], [e].[UserId], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Expenses] AS [e]
+INNER JOIN [Categories] AS [c] ON [e].[CategoryId] = [c].[Id]
+WHERE [e].[UserId] = @__userId_0 AND [e].[Date] >= @__from_Value_1 AND [e].[Date] <= @__to_Value_2
+2026-04-18 21:42:52.552 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__month_1='?' (DbType = Int32), @__year_2='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT [b].[Id], [b].[CategoryId], [b].[CreatedAt], [b].[Month], [b].[MonthlyLimit], [b].[UpdatedAt], [b].[UserId], [b].[Year], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Budgets] AS [b]
+LEFT JOIN [Categories] AS [c] ON [b].[CategoryId] = [c].[Id]
+WHERE [b].[UserId] = @__userId_0 AND [b].[Month] = @__month_1 AND [b].[Year] = @__year_2
+2026-04-18 21:42:52.561 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[@p0='?' (DbType = DateTime2), @p1='?' (DbType = Boolean), @p2='?' (Size = 1000), @p3='?' (Size = 200), @p4='?' (Size = 4000), @p5='?' (DbType = DateTime2), @p6='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Alerts] ([CreatedAt], [IsRead], [Message], [Title], [Type], [UpdatedAt], [UserId])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+2026-04-18 21:42:52.565 +03:00 [INF] Executing CreatedAtActionResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Application.DTOs.Expenses.ExpenseResponseDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-04-18 21:42:52.566 +03:00 [INF] Executed action API.Controllers.ExpensesController.Create (API) in 49.5062ms
+2026-04-18 21:42:52.568 +03:00 [INF] Executed endpoint 'API.Controllers.ExpensesController.Create (API)'
+2026-04-18 21:42:52.569 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/Expenses - 201 null application/json; charset=utf-8 60.9598ms
+2026-04-18 22:21:31.286 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/Expenses - application/json 108
+2026-04-18 22:21:31.290 +03:00 [INF] CORS policy execution successful.
+2026-04-18 22:21:31.291 +03:00 [INF] Executing endpoint 'API.Controllers.ExpensesController.Create (API)'
+2026-04-18 22:21:31.292 +03:00 [INF] Route matched with {action = "Create", controller = "Expenses"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Application.DTOs.Expenses.CreateExpenseDto) on controller API.Controllers.ExpensesController (API).
+2026-04-18 22:21:31.320 +03:00 [INF] Executed DbCommand (6ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Categories] AS [c]
+WHERE [c].[Id] = @__p_0
+2026-04-18 22:21:31.330 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[@p0='?' (Precision = 18) (Scale = 2) (DbType = Decimal), @p1='?' (DbType = Int32), @p2='?' (DbType = DateTime2), @p3='?' (DbType = DateTime2), @p4='?' (Size = 500), @p5='?' (DbType = DateTime2), @p6='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [Expenses] ([Amount], [CategoryId], [CreatedAt], [Date], [Description], [UpdatedAt], [UserId])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+2026-04-18 22:21:31.339 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__from_Value_1='?' (DbType = DateTime2), @__to_Value_2='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e].[Id], [e].[Amount], [e].[CategoryId], [e].[CreatedAt], [e].[Date], [e].[Description], [e].[UpdatedAt], [e].[UserId], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Expenses] AS [e]
+INNER JOIN [Categories] AS [c] ON [e].[CategoryId] = [c].[Id]
+WHERE [e].[UserId] = @__userId_0 AND [e].[Date] >= @__from_Value_1 AND [e].[Date] <= @__to_Value_2
+2026-04-18 22:21:31.347 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__month_1='?' (DbType = Int32), @__year_2='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT [b].[Id], [b].[CategoryId], [b].[CreatedAt], [b].[Month], [b].[MonthlyLimit], [b].[UpdatedAt], [b].[UserId], [b].[Year], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Budgets] AS [b]
+LEFT JOIN [Categories] AS [c] ON [b].[CategoryId] = [c].[Id]
+WHERE [b].[UserId] = @__userId_0 AND [b].[Month] = @__month_1 AND [b].[Year] = @__year_2
+2026-04-18 22:21:31.351 +03:00 [INF] Executing CreatedAtActionResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Application.DTOs.Expenses.ExpenseResponseDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-04-18 22:21:31.353 +03:00 [INF] Executed action API.Controllers.ExpensesController.Create (API) in 59.0099ms
+2026-04-18 22:21:31.355 +03:00 [INF] Executed endpoint 'API.Controllers.ExpensesController.Create (API)'
+2026-04-18 22:21:31.358 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/Expenses - 201 null application/json; charset=utf-8 71.9145ms
+2026-04-18 22:22:12.274 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/Insights?month=4&year=2026 - null null
+2026-04-18 22:22:12.279 +03:00 [INF] Executing endpoint 'API.Controllers.InsightsController.GetSummary (API)'
+2026-04-18 22:22:12.289 +03:00 [INF] Route matched with {action = "GetSummary", controller = "Insights"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetSummary(System.Nullable`1[System.Int32], System.Nullable`1[System.Int32]) on controller API.Controllers.InsightsController (API).
+2026-04-18 22:22:12.309 +03:00 [INF] Executed DbCommand (8ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__from_Value_1='?' (DbType = DateTime2), @__to_Value_2='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e].[Id], [e].[Amount], [e].[CategoryId], [e].[CreatedAt], [e].[Date], [e].[Description], [e].[UpdatedAt], [e].[UserId], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Expenses] AS [e]
+INNER JOIN [Categories] AS [c] ON [e].[CategoryId] = [c].[Id]
+WHERE [e].[UserId] = @__userId_0 AND [e].[Date] >= @__from_Value_1 AND [e].[Date] <= @__to_Value_2
+2026-04-18 22:22:12.314 +03:00 [INF] Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__from_Value_1='?' (DbType = DateTime2), @__to_Value_2='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e].[Id], [e].[Amount], [e].[CategoryId], [e].[CreatedAt], [e].[Date], [e].[Description], [e].[UpdatedAt], [e].[UserId], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Expenses] AS [e]
+INNER JOIN [Categories] AS [c] ON [e].[CategoryId] = [c].[Id]
+WHERE [e].[UserId] = @__userId_0 AND [e].[Date] >= @__from_Value_1 AND [e].[Date] <= @__to_Value_2
+2026-04-18 22:22:12.326 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Application.DTOs.Insights.InsightsSummaryDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-04-18 22:22:12.332 +03:00 [INF] Executed action API.Controllers.InsightsController.GetSummary (API) in 40.0732ms
+2026-04-18 22:22:12.335 +03:00 [INF] Executed endpoint 'API.Controllers.InsightsController.GetSummary (API)'
+2026-04-18 22:22:12.339 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/Insights?month=4&year=2026 - 200 null application/json; charset=utf-8 64.7281ms
+2026-04-18 22:23:08.302 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/Reports/monthly?month=4&year=2026 - null null
+2026-04-18 22:23:08.306 +03:00 [INF] Executing endpoint 'API.Controllers.ReportsController.GetMonthly (API)'
+2026-04-18 22:23:08.309 +03:00 [INF] Route matched with {action = "GetMonthly", controller = "Reports"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetMonthly(System.Nullable`1[System.Int32], System.Nullable`1[System.Int32]) on controller API.Controllers.ReportsController (API).
+2026-04-18 22:23:08.320 +03:00 [INF] Executed DbCommand (5ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__from_Value_1='?' (DbType = DateTime2), @__to_Value_2='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SELECT [e].[Id], [e].[Amount], [e].[CategoryId], [e].[CreatedAt], [e].[Date], [e].[Description], [e].[UpdatedAt], [e].[UserId], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Expenses] AS [e]
+INNER JOIN [Categories] AS [c] ON [e].[CategoryId] = [c].[Id]
+WHERE [e].[UserId] = @__userId_0 AND [e].[Date] >= @__from_Value_1 AND [e].[Date] <= @__to_Value_2
+2026-04-18 22:23:08.331 +03:00 [INF] Executed DbCommand (4ms) [Parameters=[@__userId_0='?' (DbType = Int32), @__month_1='?' (DbType = Int32), @__year_2='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT [b].[Id], [b].[CategoryId], [b].[CreatedAt], [b].[Month], [b].[MonthlyLimit], [b].[UpdatedAt], [b].[UserId], [b].[Year], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Budgets] AS [b]
+LEFT JOIN [Categories] AS [c] ON [b].[CategoryId] = [c].[Id]
+WHERE [b].[UserId] = @__userId_0 AND [b].[Month] = @__month_1 AND [b].[Year] = @__year_2
+2026-04-18 22:23:08.340 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Application.DTOs.Reports.MonthlyReportDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-04-18 22:23:08.346 +03:00 [INF] Executed action API.Controllers.ReportsController.GetMonthly (API) in 35.1443ms
+2026-04-18 22:23:08.348 +03:00 [INF] Executed endpoint 'API.Controllers.ReportsController.GetMonthly (API)'
+2026-04-18 22:23:08.349 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/Reports/monthly?month=4&year=2026 - 200 null application/json; charset=utf-8 46.7723ms
+2026-04-18 22:24:07.033 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/Expenses/1 - null null
+2026-04-18 22:24:07.050 +03:00 [INF] Executing endpoint 'API.Controllers.ExpensesController.GetById (API)'
+2026-04-18 22:24:07.069 +03:00 [INF] Route matched with {action = "GetById", controller = "Expenses"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetById(Int32) on controller API.Controllers.ExpensesController (API).
+2026-04-18 22:24:07.141 +03:00 [INF] Executed DbCommand (17ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [e].[Id], [e].[Amount], [e].[CategoryId], [e].[CreatedAt], [e].[Date], [e].[Description], [e].[UpdatedAt], [e].[UserId], [c].[Id], [c].[Color], [c].[CreatedAt], [c].[Icon], [c].[Name], [c].[UpdatedAt]
+FROM [Expenses] AS [e]
+INNER JOIN [Categories] AS [c] ON [e].[CategoryId] = [c].[Id]
+WHERE [e].[Id] = @__id_0
+2026-04-18 22:24:07.158 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`2[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Application.DTOs.Expenses.ExpenseResponseDto, Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-04-18 22:24:07.168 +03:00 [INF] Executed action API.Controllers.ExpensesController.GetById (API) in 85.829ms
+2026-04-18 22:24:07.176 +03:00 [INF] Executed endpoint 'API.Controllers.ExpensesController.GetById (API)'
+2026-04-18 22:24:07.183 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/Expenses/1 - 200 null application/json; charset=utf-8 149.5871ms
+2026-04-18 22:26:55.871 +03:00 [INF] Application is shutting down...
