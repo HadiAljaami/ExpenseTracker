@@ -4,6 +4,7 @@ using Application.DTOs.Expenses;
 using Application.DTOs.Budgets;
 using Application.DTOs.Insights;
 using Application.DTOs.Reports;
+
 namespace Application.Interfaces;
 
 public interface IAuthService
@@ -24,6 +25,7 @@ public interface IExpenseService
 public interface IBudgetService
 {
     Task<BudgetResponseDto> CreateAsync(int userId, CreateBudgetDto dto);
+    Task<BudgetResponseDto> UpdateAsync(int userId, int budgetId, CreateBudgetDto dto);
     Task<List<BudgetResponseDto>> GetAllAsync(int userId, int month, int year);
     Task DeleteAsync(int userId, int budgetId);
 }
@@ -42,5 +44,7 @@ public interface IAlertService
 {
     Task CheckAndCreateAlertsAsync(int userId);
     Task<List<AlertDto>> GetUnreadAlertsAsync(int userId);
+    Task<List<AlertDto>> GetAllAlertsAsync(int userId);
     Task MarkAsReadAsync(int userId, int alertId);
+    Task MarkAllAsReadAsync(int userId);
 }

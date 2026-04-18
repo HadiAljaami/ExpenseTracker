@@ -56,6 +56,7 @@ public class BudgetRepository : IBudgetRepository
             .ToListAsync();
 
     public async Task AddAsync(Budget budget) => await _db.Budgets.AddAsync(budget);
+    public Task UpdateAsync(Budget budget) { _db.Budgets.Update(budget); return Task.CompletedTask; }
     public Task DeleteAsync(Budget budget) { _db.Budgets.Remove(budget); return Task.CompletedTask; }
     public Task SaveChangesAsync() => _db.SaveChangesAsync();
 }
@@ -71,7 +72,20 @@ public class AlertRepository : IAlertRepository
         _db.Alerts.Where(a => a.UserId == userId && !a.IsRead)
             .OrderByDescending(a => a.CreatedAt).ToListAsync();
 
+    public Task<List<Alert>> GetAllAsync(int userId) =>
+        _db.Alerts.Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.CreatedAt).ToListAsync();
+
     public Task<Alert?> GetByIdAsync(int id) => _db.Alerts.FindAsync(id).AsTask();
+
+    public Task<bool> ExistsAsync(int userId, string type, int month, int year, int? budgetId = null) =>
+        _db.Alerts.AnyAsync(a =>
+            a.UserId == userId &&
+            a.Type == type &&
+            a.Month == month &&
+            a.Year == year &&
+            a.BudgetId == budgetId);
+
     public Task SaveChangesAsync() => _db.SaveChangesAsync();
 }
 
@@ -82,4 +96,8 @@ public class CategoryRepository : ICategoryRepository
 
     public Task<List<Category>> GetAllAsync() => _db.Categories.ToListAsync();
     public Task<Category?> GetByIdAsync(int id) => _db.Categories.FindAsync(id).AsTask();
+    public async Task AddAsync(Category category) => await _db.Categories.AddAsync(category);
+    public Task UpdateAsync(Category category) { _db.Categories.Update(category); return Task.CompletedTask; }
+    public Task DeleteAsync(Category category) { _db.Categories.Remove(category); return Task.CompletedTask; }
+    public Task SaveChangesAsync() => _db.SaveChangesAsync();
 }

@@ -9,3 +9,4 @@ D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\Domain\obj\Debug\net8.0\Domain.dll
 D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\Domain\obj\Debug\net8.0\refint\Domain.dll
 D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\Domain\obj\Debug\net8.0\Domain.pdb
 D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\Domain\obj\Debug\net8.0\ref\Domain.dll
+D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\Domain\obj\Debug\net8.0\Domain.sourcelink.json

@@ -411,3 +411,25 @@ WHERE [e].[Id] = @__id_0
 2026-04-18 22:24:07.176 +03:00 [INF] Executed endpoint 'API.Controllers.ExpensesController.GetById (API)'
 2026-04-18 22:24:07.183 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/Expenses/1 - 200 null application/json; charset=utf-8 149.5871ms
 2026-04-18 22:26:55.871 +03:00 [INF] Application is shutting down...
+2026-04-18 22:46:10.858 +03:00 [INF] Executed DbCommand (22ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-04-18 22:46:10.935 +03:00 [INF] Executed DbCommand (21ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-04-18 22:46:10.941 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-04-18 22:46:10.947 +03:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-04-18 22:46:10.968 +03:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-04-18 22:46:10.996 +03:00 [INF] No migrations were applied. The database is already up to date.
+2026-04-18 22:46:11.089 +03:00 [INF] User profile is available. Using 'C:\Users\HADI AL-JAAMI\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-04-18 22:46:11.133 +03:00 [INF] Now listening on: http://localhost:5000
+2026-04-18 22:46:11.136 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-04-18 22:46:11.137 +03:00 [INF] Hosting environment: Production
+2026-04-18 22:46:11.138 +03:00 [INF] Content root path: D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API
+2026-04-18 22:46:18.877 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/index.html - null null
+2026-04-18 22:46:19.007 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/index.html - 200 null text/html;charset=utf-8 135.7295ms
+2026-04-18 22:46:19.273 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/swagger/v1/swagger.json - null null
+2026-04-18 22:46:19.388 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 114.6651ms

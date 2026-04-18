@@ -29,6 +29,14 @@ public class BudgetsController : BaseController
         return Ok(new { success = true, data = result });
     }
 
+    /// <summary>Update an existing budget</summary>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] CreateBudgetDto dto)
+    {
+        var result = await _budgetService.UpdateAsync(UserId, id, dto);
+        return Ok(new { success = true, data = result });
+    }
+
     /// <summary>Delete a budget</summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)

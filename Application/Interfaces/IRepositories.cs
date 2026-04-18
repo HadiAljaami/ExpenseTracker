@@ -25,6 +25,7 @@ public interface IBudgetRepository
     Task<Budget?> GetByIdAsync(int id);
     Task<List<Budget>> GetUserBudgetsAsync(int userId, int month, int year);
     Task AddAsync(Budget budget);
+    Task UpdateAsync(Budget budget);
     Task DeleteAsync(Budget budget);
     Task SaveChangesAsync();
 }
@@ -33,7 +34,9 @@ public interface IAlertRepository
 {
     Task AddAsync(Alert alert);
     Task<List<Alert>> GetUnreadAsync(int userId);
+    Task<List<Alert>> GetAllAsync(int userId);
     Task<Alert?> GetByIdAsync(int id);
+    Task<bool> ExistsAsync(int userId, string type, int month, int year, int? budgetId = null);
     Task SaveChangesAsync();
 }
 
@@ -41,4 +44,8 @@ public interface ICategoryRepository
 {
     Task<List<Category>> GetAllAsync();
     Task<Category?> GetByIdAsync(int id);
+    Task AddAsync(Category category);
+    Task UpdateAsync(Category category);
+    Task DeleteAsync(Category category);
+    Task SaveChangesAsync();
 }

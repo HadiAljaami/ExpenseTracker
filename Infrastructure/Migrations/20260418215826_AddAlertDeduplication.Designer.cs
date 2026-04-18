@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260418160707_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260418215826_AddAlertDeduplication")]
+    partial class AddAlertDeduplication
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,6 +33,9 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BudgetId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -44,6 +47,9 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -51,7 +57,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -59,9 +66,13 @@ namespace Infrastructure.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "Type", "Month", "Year", "BudgetId")
+                        .HasDatabaseName("IX_Alert_Dedup");
 
                     b.ToTable("Alerts");
                 });
@@ -140,7 +151,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 1,
                             Color = "#FF6B6B",
-                            CreatedAt = new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4014),
+                            CreatedAt = new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8706),
                             Icon = "🍔",
                             Name = "Food & Dining"
                         },
@@ -148,7 +159,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 2,
                             Color = "#4ECDC4",
-                            CreatedAt = new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4017),
+                            CreatedAt = new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8710),
                             Icon = "🚗",
                             Name = "Transport"
                         },
@@ -156,7 +167,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 3,
                             Color = "#45B7D1",
-                            CreatedAt = new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4019),
+                            CreatedAt = new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8714),
                             Icon = "💡",
                             Name = "Bills & Utilities"
                         },
@@ -164,7 +175,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 4,
                             Color = "#96CEB4",
-                            CreatedAt = new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4063),
+                            CreatedAt = new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8718),
                             Icon = "🎬",
                             Name = "Entertainment"
                         },
@@ -172,7 +183,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 5,
                             Color = "#FFEAA7",
-                            CreatedAt = new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4065),
+                            CreatedAt = new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8721),
                             Icon = "🏥",
                             Name = "Healthcare"
                         },
@@ -180,7 +191,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 6,
                             Color = "#DDA0DD",
-                            CreatedAt = new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4067),
+                            CreatedAt = new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8724),
                             Icon = "🛍️",
                             Name = "Shopping"
                         },
@@ -188,7 +199,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 7,
                             Color = "#98D8C8",
-                            CreatedAt = new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4068),
+                            CreatedAt = new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8727),
                             Icon = "📚",
                             Name = "Education"
                         },
@@ -196,7 +207,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 8,
                             Color = "#B0BEC5",
-                            CreatedAt = new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4070),
+                            CreatedAt = new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8730),
                             Icon = "📦",
                             Name = "Other"
                         });

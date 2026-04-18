@@ -45,6 +45,26 @@ public class BudgetService : IBudgetService
         return result;
     }
 
+    public async Task<BudgetResponseDto> UpdateAsync(int userId, int budgetId, CreateBudgetDto dto)
+    {
+        var budget = await _budgetRepo.GetByIdAsync(budgetId)
+            ?? throw new KeyNotFoundException("Budget not found.");
+
+        if (budget.UserId != userId)
+            throw new UnauthorizedAccessException("Access denied.");
+
+        budget.CategoryId = dto.CategoryId;
+        budget.MonthlyLimit = dto.MonthlyLimit;
+        budget.Month = dto.Month;
+        budget.Year = dto.Year;
+        budget.UpdatedAt = DateTime.UtcNow;
+
+        await _budgetRepo.UpdateAsync(budget);
+        await _budgetRepo.SaveChangesAsync();
+
+        return await EnrichBudget(budget);
+    }
+
     public async Task DeleteAsync(int userId, int budgetId)
     {
         var budget = await _budgetRepo.GetByIdAsync(budgetId)

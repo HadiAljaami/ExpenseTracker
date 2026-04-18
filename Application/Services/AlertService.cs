@@ -34,68 +34,80 @@ public class AlertService : IAlertService
 
             var totalSpent = relevantExpenses.Sum(e => e.Amount);
             var percentage = budget.MonthlyLimit > 0 ? (double)(totalSpent / budget.MonthlyLimit) * 100 : 0;
+            var categoryLabel = budget.CategoryId.HasValue ? $" ({budget.Category?.Name})" : "";
 
             if (percentage >= 100)
             {
-                var categoryLabel = budget.CategoryId.HasValue
-                    ? $" ({budget.Category?.Name})"
-                    : "";
-
-                await _alertRepo.AddAsync(new Alert
+                // منع التكرار — تنبيه واحد فقط لكل budget في الشهر
+                var exists = await _alertRepo.ExistsAsync(userId, "BudgetExceeded", now.Month, now.Year, budget.Id);
+                if (!exists)
                 {
-                    UserId = userId,
-                    Title = "⚠️ Budget Exceeded",
-                    Message = $"You have exceeded your{categoryLabel} budget of {budget.MonthlyLimit:C} this month. Total spent: {totalSpent:C}.",
-                    Type = "BudgetExceeded"
-                });
+                    await _alertRepo.AddAsync(new Alert
+                    {
+                        UserId = userId,
+                        BudgetId = budget.Id,
+                        Month = now.Month,
+                        Year = now.Year,
+                        Title = "⚠️ Budget Exceeded",
+                        Message = $"You have exceeded your{categoryLabel} budget of {budget.MonthlyLimit:C}. Total spent: {totalSpent:C}.",
+                        Type = "BudgetExceeded"
+                    });
+                }
             }
             else if (percentage >= 80)
             {
-                var categoryLabel = budget.CategoryId.HasValue
-                    ? $" ({budget.Category?.Name})"
-                    : "";
-
-                await _alertRepo.AddAsync(new Alert
+                var exists = await _alertRepo.ExistsAsync(userId, "BudgetWarning", now.Month, now.Year, budget.Id);
+                if (!exists)
                 {
-                    UserId = userId,
-                    Title = "🔔 Budget Warning",
-                    Message = $"You have used {percentage:F0}% of your{categoryLabel} budget. Remaining: {(budget.MonthlyLimit - totalSpent):C}.",
-                    Type = "BudgetWarning"
-                });
+                    await _alertRepo.AddAsync(new Alert
+                    {
+                        UserId = userId,
+                        BudgetId = budget.Id,
+                        Month = now.Month,
+                        Year = now.Year,
+                        Title = "🔔 Budget Warning",
+                        Message = $"You have used {percentage:F0}% of your{categoryLabel} budget. Remaining: {(budget.MonthlyLimit - totalSpent):C}.",
+                        Type = "BudgetWarning"
+                    });
+                }
             }
         }
 
-        // Spending spike: today vs daily average
+        // Spending spike — مرة واحدة في اليوم فقط
         var todayTotal = expenses.Where(e => e.Date.Date == now.Date).Sum(e => e.Amount);
         var daysElapsed = (now - from).Days + 1;
         var dailyAvg = daysElapsed > 1 ? expenses.Sum(e => e.Amount) / daysElapsed : 0;
 
         if (dailyAvg > 0 && todayTotal > dailyAvg * 2)
         {
-            await _alertRepo.AddAsync(new Alert
+            var spikeExists = await _alertRepo.ExistsAsync(userId, "SpendingSpike", now.Month, now.Year);
+            if (!spikeExists)
             {
-                UserId = userId,
-                Title = "📈 Spending Spike Detected",
-                Message = $"You spent {todayTotal:C} today — more than double your daily average of {dailyAvg:C}.",
-                Type = "SpendingSpike"
-            });
+                await _alertRepo.AddAsync(new Alert
+                {
+                    UserId = userId,
+                    Month = now.Month,
+                    Year = now.Year,
+                    Title = "📈 Spending Spike Detected",
+                    Message = $"You spent {todayTotal:C} today — more than double your daily average of {dailyAvg:C}.",
+                    Type = "SpendingSpike"
+                });
+            }
         }
 
         await _alertRepo.SaveChangesAsync();
     }
 
+    public async Task<List<AlertDto>> GetAllAlertsAsync(int userId)
+    {
+        var alerts = await _alertRepo.GetAllAsync(userId);
+        return alerts.Select(MapToDto).ToList();
+    }
+
     public async Task<List<AlertDto>> GetUnreadAlertsAsync(int userId)
     {
         var alerts = await _alertRepo.GetUnreadAsync(userId);
-        return alerts.Select(a => new AlertDto
-        {
-            Id = a.Id,
-            Title = a.Title,
-            Message = a.Message,
-            Type = a.Type,
-            IsRead = a.IsRead,
-            CreatedAt = a.CreatedAt
-        }).ToList();
+        return alerts.Select(MapToDto).ToList();
     }
 
     public async Task MarkAsReadAsync(int userId, int alertId)
@@ -109,4 +121,22 @@ public class AlertService : IAlertService
         alert.IsRead = true;
         await _alertRepo.SaveChangesAsync();
     }
+
+    public async Task MarkAllAsReadAsync(int userId)
+    {
+        var alerts = await _alertRepo.GetUnreadAsync(userId);
+        foreach (var alert in alerts)
+            alert.IsRead = true;
+        await _alertRepo.SaveChangesAsync();
+    }
+
+    private static AlertDto MapToDto(Alert a) => new()
+    {
+        Id = a.Id,
+        Title = a.Title,
+        Message = a.Message,
+        Type = a.Type,
+        IsRead = a.IsRead,
+        CreatedAt = a.CreatedAt
+    };
 }

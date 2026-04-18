@@ -157,3 +157,4 @@ D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\obj\Debug\net8.0\refint\API.dl
 D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\obj\Debug\net8.0\API.pdb
 D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\obj\Debug\net8.0\API.genruntimeconfig.cache
 D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\obj\Debug\net8.0\ref\API.dll
+D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\obj\Debug\net8.0\API.sourcelink.json

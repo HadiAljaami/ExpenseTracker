@@ -47,7 +47,9 @@ public class AppDbContext : DbContext
         {
             e.Property(x => x.Title).HasMaxLength(200);
             e.Property(x => x.Message).HasMaxLength(1000);
+            e.Property(x => x.Type).HasMaxLength(50);
             e.HasOne(x => x.User).WithMany(u => u.Alerts).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.UserId, x.Type, x.Month, x.Year, x.BudgetId }).HasDatabaseName("IX_Alert_Dedup");
         });
 
         // Seed categories

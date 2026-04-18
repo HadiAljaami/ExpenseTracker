@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class AddAlertDeduplication : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,9 +55,12 @@ namespace Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
+                    BudgetId = table.Column<int>(type: "int", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Message = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Month = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -140,20 +143,20 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "Color", "CreatedAt", "Icon", "Name", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, "#FF6B6B", new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4014), "🍔", "Food & Dining", null },
-                    { 2, "#4ECDC4", new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4017), "🚗", "Transport", null },
-                    { 3, "#45B7D1", new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4019), "💡", "Bills & Utilities", null },
-                    { 4, "#96CEB4", new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4063), "🎬", "Entertainment", null },
-                    { 5, "#FFEAA7", new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4065), "🏥", "Healthcare", null },
-                    { 6, "#DDA0DD", new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4067), "🛍️", "Shopping", null },
-                    { 7, "#98D8C8", new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4068), "📚", "Education", null },
-                    { 8, "#B0BEC5", new DateTime(2026, 4, 18, 16, 7, 6, 29, DateTimeKind.Utc).AddTicks(4070), "📦", "Other", null }
+                    { 1, "#FF6B6B", new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8706), "🍔", "Food & Dining", null },
+                    { 2, "#4ECDC4", new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8710), "🚗", "Transport", null },
+                    { 3, "#45B7D1", new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8714), "💡", "Bills & Utilities", null },
+                    { 4, "#96CEB4", new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8718), "🎬", "Entertainment", null },
+                    { 5, "#FFEAA7", new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8721), "🏥", "Healthcare", null },
+                    { 6, "#DDA0DD", new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8724), "🛍️", "Shopping", null },
+                    { 7, "#98D8C8", new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8727), "📚", "Education", null },
+                    { 8, "#B0BEC5", new DateTime(2026, 4, 18, 21, 58, 25, 289, DateTimeKind.Utc).AddTicks(8730), "📦", "Other", null }
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Alerts_UserId",
+                name: "IX_Alert_Dedup",
                 table: "Alerts",
-                column: "UserId");
+                columns: new[] { "UserId", "Type", "Month", "Year", "BudgetId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Budgets_CategoryId",
