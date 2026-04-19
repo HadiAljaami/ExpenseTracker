@@ -18,6 +18,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddRateLimiting();
 builder.Services.AddApplicationServices();
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddCors(options =>
@@ -28,7 +29,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Auto migrate + seed on startup
+// Auto migrate on startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -39,10 +40,12 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Smart Expense Tracker API v1");
-    c.RoutePrefix = string.Empty; // Swagger at root
+    c.RoutePrefix = string.Empty;
 });
 
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<TokenBlacklistMiddleware>();
+app.UseRateLimiter();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();

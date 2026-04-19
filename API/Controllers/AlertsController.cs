@@ -10,19 +10,11 @@ public class AlertsController : BaseController
 
     public AlertsController(IAlertService alertService) => _alertService = alertService;
 
-    /// <summary>Get all alerts (read and unread)</summary>
+    /// <summary>Get paged alerts (use unreadOnly=true for unread only)</summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] bool? unreadOnly = null)
     {
-        var result = await _alertService.GetAllAlertsAsync(UserId);
-        return Ok(new { success = true, data = result });
-    }
-
-    /// <summary>Get unread alerts only</summary>
-    [HttpGet("unread")]
-    public async Task<IActionResult> GetUnread()
-    {
-        var result = await _alertService.GetUnreadAlertsAsync(UserId);
+        var result = await _alertService.GetAlertsAsync(UserId, page, pageSize, unreadOnly);
         return Ok(new { success = true, data = result });
     }
 

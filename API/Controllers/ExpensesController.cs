@@ -43,11 +43,27 @@ public class ExpensesController : BaseController
         return Ok(new { success = true, data = result });
     }
 
-    /// <summary>Delete an expense</summary>
+    /// <summary>Delete an expense (soft delete — recoverable)</summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         await _expenseService.DeleteAsync(UserId, id);
         return Ok(new { success = true, message = "Expense deleted successfully." });
+    }
+
+    /// <summary>Get all soft-deleted expenses</summary>
+    [HttpGet("deleted")]
+    public async Task<IActionResult> GetDeleted()
+    {
+        var result = await _expenseService.GetDeletedAsync(UserId);
+        return Ok(new { success = true, data = result });
+    }
+
+    /// <summary>Restore a previously deleted expense</summary>
+    [HttpPatch("{id}/restore")]
+    public async Task<IActionResult> Restore(int id)
+    {
+        await _expenseService.RestoreAsync(UserId, id);
+        return Ok(new { success = true, message = "Expense restored successfully." });
     }
 }

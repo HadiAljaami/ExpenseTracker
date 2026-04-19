@@ -38,42 +38,30 @@ public class AlertService : IAlertService
 
             if (percentage >= 100)
             {
-                // منع التكرار — تنبيه واحد فقط لكل budget في الشهر
                 var exists = await _alertRepo.ExistsAsync(userId, "BudgetExceeded", now.Month, now.Year, budget.Id);
                 if (!exists)
-                {
                     await _alertRepo.AddAsync(new Alert
                     {
-                        UserId = userId,
-                        BudgetId = budget.Id,
-                        Month = now.Month,
-                        Year = now.Year,
+                        UserId = userId, BudgetId = budget.Id, Month = now.Month, Year = now.Year,
                         Title = "⚠️ Budget Exceeded",
                         Message = $"You have exceeded your{categoryLabel} budget of {budget.MonthlyLimit:C}. Total spent: {totalSpent:C}.",
                         Type = "BudgetExceeded"
                     });
-                }
             }
             else if (percentage >= 80)
             {
                 var exists = await _alertRepo.ExistsAsync(userId, "BudgetWarning", now.Month, now.Year, budget.Id);
                 if (!exists)
-                {
                     await _alertRepo.AddAsync(new Alert
                     {
-                        UserId = userId,
-                        BudgetId = budget.Id,
-                        Month = now.Month,
-                        Year = now.Year,
+                        UserId = userId, BudgetId = budget.Id, Month = now.Month, Year = now.Year,
                         Title = "🔔 Budget Warning",
                         Message = $"You have used {percentage:F0}% of your{categoryLabel} budget. Remaining: {(budget.MonthlyLimit - totalSpent):C}.",
                         Type = "BudgetWarning"
                     });
-                }
             }
         }
 
-        // Spending spike — مرة واحدة في اليوم فقط
         var todayTotal = expenses.Where(e => e.Date.Date == now.Date).Sum(e => e.Amount);
         var daysElapsed = (now - from).Days + 1;
         var dailyAvg = daysElapsed > 1 ? expenses.Sum(e => e.Amount) / daysElapsed : 0;
@@ -82,20 +70,31 @@ public class AlertService : IAlertService
         {
             var spikeExists = await _alertRepo.ExistsAsync(userId, "SpendingSpike", now.Month, now.Year);
             if (!spikeExists)
-            {
                 await _alertRepo.AddAsync(new Alert
                 {
-                    UserId = userId,
-                    Month = now.Month,
-                    Year = now.Year,
+                    UserId = userId, Month = now.Month, Year = now.Year,
                     Title = "📈 Spending Spike Detected",
                     Message = $"You spent {todayTotal:C} today — more than double your daily average of {dailyAvg:C}.",
                     Type = "SpendingSpike"
                 });
-            }
         }
 
         await _alertRepo.SaveChangesAsync();
+    }
+
+    public async Task<PagedAlertsDto> GetAlertsAsync(int userId, int page, int pageSize, bool? unreadOnly = null)
+    {
+        var (items, total, unread) = await _alertRepo.GetPagedAsync(userId, page, pageSize);
+        var filtered = unreadOnly == true ? items.Where(a => !a.IsRead).ToList() : items;
+
+        return new PagedAlertsDto
+        {
+            Items = filtered.Select(MapToDto).ToList(),
+            TotalCount = unreadOnly == true ? unread : total,
+            UnreadCount = unread,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task<List<AlertDto>> GetAllAlertsAsync(int userId)
@@ -114,10 +113,7 @@ public class AlertService : IAlertService
     {
         var alert = await _alertRepo.GetByIdAsync(alertId)
             ?? throw new KeyNotFoundException("Alert not found.");
-
-        if (alert.UserId != userId)
-            throw new UnauthorizedAccessException("Access denied.");
-
+        if (alert.UserId != userId) throw new UnauthorizedAccessException("Access denied.");
         alert.IsRead = true;
         await _alertRepo.SaveChangesAsync();
     }
@@ -125,18 +121,13 @@ public class AlertService : IAlertService
     public async Task MarkAllAsReadAsync(int userId)
     {
         var alerts = await _alertRepo.GetUnreadAsync(userId);
-        foreach (var alert in alerts)
-            alert.IsRead = true;
+        foreach (var alert in alerts) alert.IsRead = true;
         await _alertRepo.SaveChangesAsync();
     }
 
     private static AlertDto MapToDto(Alert a) => new()
     {
-        Id = a.Id,
-        Title = a.Title,
-        Message = a.Message,
-        Type = a.Type,
-        IsRead = a.IsRead,
-        CreatedAt = a.CreatedAt
+        Id = a.Id, Title = a.Title, Message = a.Message,
+        Type = a.Type, IsRead = a.IsRead, CreatedAt = a.CreatedAt
     };
 }

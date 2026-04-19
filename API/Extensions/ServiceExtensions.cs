@@ -8,10 +8,12 @@ using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Threading.RateLimiting;
 
 namespace API.Extensions;
 
@@ -44,6 +46,43 @@ public static class ServiceExtensions
         return services;
     }
 
+    public static IServiceCollection AddRateLimiting(this IServiceCollection services)
+    {
+        services.AddRateLimiter(options =>
+        {
+            // Global: 100 requests per minute per IP
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 5
+                    }));
+
+            // Auth endpoints: 10 requests per minute (anti-brute force)
+            options.AddFixedWindowLimiter("AuthPolicy", opt =>
+            {
+                opt.PermitLimit = 10;
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 0;
+            });
+
+            options.OnRejected = async (context, token) =>
+            {
+                context.HttpContext.Response.StatusCode = 429;
+                context.HttpContext.Response.ContentType = "application/json";
+                await context.HttpContext.Response.WriteAsync(
+                    "{\"success\":false,\"message\":\"Too many requests. Please try again later.\"}",
+                    cancellationToken: token);
+            };
+        });
+        return services;
+    }
+
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         // Repositories
@@ -52,16 +91,22 @@ public static class ServiceExtensions
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<IAlertRepository, AlertRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IRevokedTokenRepository, RevokedTokenRepository>();
+        services.AddScoped<IRecurringExpenseRepository, RecurringExpenseRepository>();
 
         // Services
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
         services.AddScoped<IExpenseService, ExpenseService>();
         services.AddScoped<IBudgetService, BudgetService>();
         services.AddScoped<IInsightsService, InsightsService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IAlertService, AlertService>();
         services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IRecurringExpenseService, RecurringExpenseService>();
+        services.AddScoped<IExportService, Infrastructure.Services.ExportService>();
 
         // AutoMapper
         services.AddAutoMapper(typeof(MappingProfile));

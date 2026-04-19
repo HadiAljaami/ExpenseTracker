@@ -148,7 +148,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 1,
                             Color = "#FF6B6B",
-                            CreatedAt = new DateTime(2026, 4, 18, 22, 1, 59, 503, DateTimeKind.Utc).AddTicks(4355),
+                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(4912),
                             Icon = "🍔",
                             Name = "Food & Dining"
                         },
@@ -156,7 +156,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 2,
                             Color = "#4ECDC4",
-                            CreatedAt = new DateTime(2026, 4, 18, 22, 1, 59, 503, DateTimeKind.Utc).AddTicks(4359),
+                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(4990),
                             Icon = "🚗",
                             Name = "Transport"
                         },
@@ -164,7 +164,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 3,
                             Color = "#45B7D1",
-                            CreatedAt = new DateTime(2026, 4, 18, 22, 1, 59, 503, DateTimeKind.Utc).AddTicks(4363),
+                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(4998),
                             Icon = "💡",
                             Name = "Bills & Utilities"
                         },
@@ -172,7 +172,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 4,
                             Color = "#96CEB4",
-                            CreatedAt = new DateTime(2026, 4, 18, 22, 1, 59, 503, DateTimeKind.Utc).AddTicks(4366),
+                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5002),
                             Icon = "🎬",
                             Name = "Entertainment"
                         },
@@ -180,7 +180,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 5,
                             Color = "#FFEAA7",
-                            CreatedAt = new DateTime(2026, 4, 18, 22, 1, 59, 503, DateTimeKind.Utc).AddTicks(4369),
+                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5006),
                             Icon = "🏥",
                             Name = "Healthcare"
                         },
@@ -188,7 +188,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 6,
                             Color = "#DDA0DD",
-                            CreatedAt = new DateTime(2026, 4, 18, 22, 1, 59, 503, DateTimeKind.Utc).AddTicks(4373),
+                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5010),
                             Icon = "🛍️",
                             Name = "Shopping"
                         },
@@ -196,7 +196,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 7,
                             Color = "#98D8C8",
-                            CreatedAt = new DateTime(2026, 4, 18, 22, 1, 59, 503, DateTimeKind.Utc).AddTicks(4376),
+                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5013),
                             Icon = "📚",
                             Name = "Education"
                         },
@@ -204,7 +204,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 8,
                             Color = "#B0BEC5",
-                            CreatedAt = new DateTime(2026, 4, 18, 22, 1, 59, 503, DateTimeKind.Utc).AddTicks(4379),
+                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5017),
                             Icon = "📦",
                             Name = "Other"
                         });
@@ -231,10 +231,68 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("UserId", "IsDeleted", "Date");
+
+                    b.ToTable("Expenses");
+                });
+
+            modelBuilder.Entity("Domain.Entities.RecurringExpense", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DayOfMonth")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastProcessedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -248,7 +306,36 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Expenses");
+                    b.ToTable("RecurringExpenses");
+                });
+
+            modelBuilder.Entity("Domain.Entities.RevokedToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token");
+
+                    b.ToTable("RevokedTokens");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -261,6 +348,13 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasDefaultValue("SAR");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -339,6 +433,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Domain.Entities.RecurringExpense", b =>
+                {
+                    b.HasOne("Domain.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany("RecurringExpenses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Category", b =>
                 {
                     b.Navigation("Budgets");
@@ -353,6 +466,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("Budgets");
 
                     b.Navigation("Expenses");
+
+                    b.Navigation("RecurringExpenses");
                 });
 #pragma warning restore 612, 618
         }

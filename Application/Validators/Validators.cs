@@ -1,6 +1,8 @@
 using Application.DTOs.Auth;
 using Application.DTOs.Expenses;
 using Application.DTOs.Budgets;
+using Application.DTOs.Users;
+using Application.DTOs.RecurringExpenses;
 using FluentValidation;
 
 namespace Application.Validators;
@@ -56,5 +58,40 @@ public class CreateBudgetValidator : AbstractValidator<CreateBudgetDto>
         RuleFor(x => x.MonthlyLimit).GreaterThan(0).WithMessage("Budget limit must be greater than zero.");
         RuleFor(x => x.Month).InclusiveBetween(1, 12);
         RuleFor(x => x.Year).InclusiveBetween(2020, 2100);
+    }
+}
+
+public class UpdateProfileValidator : AbstractValidator<UpdateProfileDto>
+{
+    public UpdateProfileValidator()
+    {
+        RuleFor(x => x.FullName).NotEmpty().MinimumLength(2).MaximumLength(100);
+        RuleFor(x => x.Currency).NotEmpty().MaximumLength(10);
+    }
+}
+
+public class ChangePasswordValidator : AbstractValidator<ChangePasswordDto>
+{
+    public ChangePasswordValidator()
+    {
+        RuleFor(x => x.CurrentPassword).NotEmpty();
+        RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(6)
+            .Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
+            .Matches("[0-9]").WithMessage("Password must contain at least one digit.");
+        RuleFor(x => x.ConfirmNewPassword).NotEmpty()
+            .Equal(x => x.NewPassword).WithMessage("Passwords do not match.");
+    }
+}
+
+public class CreateRecurringExpenseValidator : AbstractValidator<CreateRecurringExpenseDto>
+{
+    public CreateRecurringExpenseValidator()
+    {
+        RuleFor(x => x.CategoryId).GreaterThan(0);
+        RuleFor(x => x.Amount).GreaterThan(0);
+        RuleFor(x => x.Description).MaximumLength(500);
+        RuleFor(x => x.Frequency).NotEmpty().Must(f => new[] { "Monthly", "Weekly", "Yearly" }.Contains(f))
+            .WithMessage("Frequency must be Monthly, Weekly, or Yearly.");
+        RuleFor(x => x.DayOfMonth).InclusiveBetween(1, 28);
     }
 }

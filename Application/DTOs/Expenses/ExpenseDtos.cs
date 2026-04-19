@@ -35,6 +35,7 @@ public class ExpenseFilterDto
     public DateTime? ToDate { get; set; }
     public decimal? MinAmount { get; set; }
     public decimal? MaxAmount { get; set; }
+    public string? Search { get; set; }
     public string? SortBy { get; set; } = "Date";
     public string? SortDirection { get; set; } = "desc";
     public int Page { get; set; } = 1;

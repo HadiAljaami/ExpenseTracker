@@ -12,29 +12,30 @@ public class AppDbContext : DbContext
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<Budget> Budgets => Set<Budget>();
     public DbSet<Alert> Alerts => Set<Alert>();
+    public DbSet<RevokedToken> RevokedTokens => Set<RevokedToken>();
+    public DbSet<RecurringExpense> RecurringExpenses => Set<RecurringExpense>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // User
         modelBuilder.Entity<User>(e =>
         {
             e.HasIndex(u => u.Email).IsUnique();
             e.Property(u => u.FullName).HasMaxLength(100);
             e.Property(u => u.Email).HasMaxLength(150);
+            e.Property(u => u.Currency).HasMaxLength(10).HasDefaultValue("SAR");
         });
 
-        // Expense
         modelBuilder.Entity<Expense>(e =>
         {
             e.Property(x => x.Amount).HasPrecision(18, 2);
             e.Property(x => x.Description).HasMaxLength(500);
             e.HasOne(x => x.User).WithMany(u => u.Expenses).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Category).WithMany(c => c.Expenses).HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.UserId, x.IsDeleted, x.Date });
         });
 
-        // Budget
         modelBuilder.Entity<Budget>(e =>
         {
             e.Property(x => x.MonthlyLimit).HasPrecision(18, 2);
@@ -42,7 +43,6 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.Category).WithMany(c => c.Budgets).HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
         });
 
-        // Alert
         modelBuilder.Entity<Alert>(e =>
         {
             e.Property(x => x.Title).HasMaxLength(200);
@@ -50,6 +50,21 @@ public class AppDbContext : DbContext
             e.Property(x => x.Type).HasMaxLength(50);
             e.HasOne(x => x.User).WithMany(u => u.Alerts).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.UserId, x.Type, x.Month, x.Year, x.BudgetId }).HasDatabaseName("IX_Alert_Dedup");
+        });
+
+        modelBuilder.Entity<RevokedToken>(e =>
+        {
+            e.Property(x => x.Token).HasMaxLength(2000);
+            e.HasIndex(x => x.Token);
+        });
+
+        modelBuilder.Entity<RecurringExpense>(e =>
+        {
+            e.Property(x => x.Amount).HasPrecision(18, 2);
+            e.Property(x => x.Description).HasMaxLength(500);
+            e.Property(x => x.Frequency).HasMaxLength(20);
+            e.HasOne(x => x.User).WithMany(u => u.RecurringExpenses).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
         });
 
         // Seed categories

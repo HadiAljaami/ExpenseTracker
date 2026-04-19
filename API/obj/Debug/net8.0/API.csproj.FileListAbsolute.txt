@@ -158,3 +158,10 @@ D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\obj\Debug\net8.0\API.pdb
 D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\obj\Debug\net8.0\API.genruntimeconfig.cache
 D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\obj\Debug\net8.0\ref\API.dll
 D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\obj\Debug\net8.0\API.sourcelink.json
+D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\bin\Debug\net8.0\ClosedXML.dll
+D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
+D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\bin\Debug\net8.0\ExcelNumberFormat.dll
+D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\bin\Debug\net8.0\Irony.dll
+D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\bin\Debug\net8.0\SixLabors.Fonts.dll
+D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\bin\Debug\net8.0\System.IO.Packaging.dll
+D:\CodesLib\pjs\ExpenseTracker\ExpenseTracker\API\bin\Debug\net8.0\XLParser.dll

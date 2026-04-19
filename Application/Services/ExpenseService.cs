@@ -64,6 +64,27 @@ public class ExpenseService : IExpenseService
         return MapToResponse(expense, category);
     }
 
+    public async Task RestoreAsync(int userId, int expenseId)
+    {
+        var expense = await _expenseRepo.GetByIdIncludeDeletedAsync(expenseId)
+            ?? throw new KeyNotFoundException("Expense not found.");
+
+        if (expense.UserId != userId)
+            throw new UnauthorizedAccessException("Access denied.");
+
+        if (!expense.IsDeleted)
+            throw new InvalidOperationException("Expense is not deleted.");
+
+        await _expenseRepo.RestoreAsync(expense);
+        await _expenseRepo.SaveChangesAsync();
+    }
+
+    public async Task<List<ExpenseResponseDto>> GetDeletedAsync(int userId)
+    {
+        var expenses = await _expenseRepo.GetDeletedExpensesAsync(userId);
+        return expenses.Select(e => MapToResponse(e, e.Category)).ToList();
+    }
+
     public async Task DeleteAsync(int userId, int expenseId)
     {
         var expense = await _expenseRepo.GetByIdAsync(expenseId)
@@ -93,6 +114,9 @@ public class ExpenseService : IExpenseService
 
         if (filter.CategoryId.HasValue)
             expenses = expenses.Where(e => e.CategoryId == filter.CategoryId).ToList();
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+            expenses = expenses.Where(e => e.Description.Contains(filter.Search, StringComparison.OrdinalIgnoreCase)).ToList();
 
         if (filter.MinAmount.HasValue)
             expenses = expenses.Where(e => e.Amount >= filter.MinAmount).ToList();
