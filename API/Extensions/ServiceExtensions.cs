@@ -40,7 +40,8 @@ public static class ServiceExtensions
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = config["Jwt:Issuer"],
                     ValidAudience = config["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ClockSkew = TimeSpan.Zero
                 };
             });
         return services;
@@ -50,7 +51,6 @@ public static class ServiceExtensions
     {
         services.AddRateLimiter(options =>
         {
-            // Global: 100 requests per minute per IP
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
                 RateLimitPartition.GetFixedWindowLimiter(
                     context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
@@ -62,7 +62,6 @@ public static class ServiceExtensions
                         QueueLimit = 5
                     }));
 
-            // Auth endpoints: 10 requests per minute (anti-brute force)
             options.AddFixedWindowLimiter("AuthPolicy", opt =>
             {
                 opt.PermitLimit = 10;
@@ -76,7 +75,7 @@ public static class ServiceExtensions
                 context.HttpContext.Response.StatusCode = 429;
                 context.HttpContext.Response.ContentType = "application/json";
                 await context.HttpContext.Response.WriteAsync(
-                    "{\"success\":false,\"message\":\"Too many requests. Please try again later.\"}",
+                    "{\"success\":false,\"statusCode\":429,\"message\":\"Too many requests. Please try again later.\"}",
                     cancellationToken: token);
             };
         });
@@ -93,6 +92,9 @@ public static class ServiceExtensions
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IRevokedTokenRepository, RevokedTokenRepository>();
         services.AddScoped<IRecurringExpenseRepository, RecurringExpenseRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
         // Services
         services.AddScoped<IJwtService, JwtService>();
@@ -107,6 +109,7 @@ public static class ServiceExtensions
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IRecurringExpenseService, RecurringExpenseService>();
         services.AddScoped<IExportService, Infrastructure.Services.ExportService>();
+        services.AddScoped<IEmailService, EmailService>();
 
         // AutoMapper
         services.AddAutoMapper(typeof(MappingProfile));
@@ -126,7 +129,7 @@ public static class ServiceExtensions
             {
                 Title = "💰 Smart Expense Tracker API",
                 Version = "v1",
-                Description = "A powerful API for tracking expenses, managing budgets, and generating financial insights."
+                Description = "A production-ready API for tracking expenses, managing budgets, and generating financial insights."
             });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

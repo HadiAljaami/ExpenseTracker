@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260419091222_FinalVersion")]
-    partial class FinalVersion
+    [Migration("20260419151212_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,6 +75,57 @@ namespace Infrastructure.Migrations
                         .HasDatabaseName("IX_Alert_Dedup");
 
                     b.ToTable("Alerts");
+                });
+
+            modelBuilder.Entity("Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("AdminEmail")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("AdminId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminId");
+
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("Domain.Entities.Budget", b =>
@@ -151,7 +202,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 1,
                             Color = "#FF6B6B",
-                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(4912),
+                            CreatedAt = new DateTime(2026, 4, 19, 15, 12, 12, 155, DateTimeKind.Utc).AddTicks(1995),
                             Icon = "🍔",
                             Name = "Food & Dining"
                         },
@@ -159,7 +210,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 2,
                             Color = "#4ECDC4",
-                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(4990),
+                            CreatedAt = new DateTime(2026, 4, 19, 15, 12, 12, 155, DateTimeKind.Utc).AddTicks(1998),
                             Icon = "🚗",
                             Name = "Transport"
                         },
@@ -167,7 +218,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 3,
                             Color = "#45B7D1",
-                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(4998),
+                            CreatedAt = new DateTime(2026, 4, 19, 15, 12, 12, 155, DateTimeKind.Utc).AddTicks(2001),
                             Icon = "💡",
                             Name = "Bills & Utilities"
                         },
@@ -175,7 +226,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 4,
                             Color = "#96CEB4",
-                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5002),
+                            CreatedAt = new DateTime(2026, 4, 19, 15, 12, 12, 155, DateTimeKind.Utc).AddTicks(2003),
                             Icon = "🎬",
                             Name = "Entertainment"
                         },
@@ -183,7 +234,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 5,
                             Color = "#FFEAA7",
-                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5006),
+                            CreatedAt = new DateTime(2026, 4, 19, 15, 12, 12, 155, DateTimeKind.Utc).AddTicks(2006),
                             Icon = "🏥",
                             Name = "Healthcare"
                         },
@@ -191,7 +242,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 6,
                             Color = "#DDA0DD",
-                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5010),
+                            CreatedAt = new DateTime(2026, 4, 19, 15, 12, 12, 155, DateTimeKind.Utc).AddTicks(2008),
                             Icon = "🛍️",
                             Name = "Shopping"
                         },
@@ -199,7 +250,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 7,
                             Color = "#98D8C8",
-                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5013),
+                            CreatedAt = new DateTime(2026, 4, 19, 15, 12, 12, 155, DateTimeKind.Utc).AddTicks(2010),
                             Icon = "📚",
                             Name = "Education"
                         },
@@ -207,7 +258,7 @@ namespace Infrastructure.Migrations
                         {
                             Id = 8,
                             Color = "#B0BEC5",
-                            CreatedAt = new DateTime(2026, 4, 19, 9, 12, 20, 269, DateTimeKind.Utc).AddTicks(5017),
+                            CreatedAt = new DateTime(2026, 4, 19, 15, 12, 12, 155, DateTimeKind.Utc).AddTicks(2013),
                             Icon = "📦",
                             Name = "Other"
                         });
@@ -260,6 +311,43 @@ namespace Infrastructure.Migrations
                     b.ToTable("Expenses");
                 });
 
+            modelBuilder.Entity("Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetTokens");
+                });
+
             modelBuilder.Entity("Domain.Entities.RecurringExpense", b =>
                 {
                     b.Property<int>("Id")
@@ -310,6 +398,46 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RecurringExpenses");
+                });
+
+            modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ReplacedByToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Domain.Entities.RevokedToken", b =>
@@ -369,13 +497,21 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("IsSuspended")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("User");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -397,6 +533,17 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.AuditLog", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Admin")
+                        .WithMany()
+                        .HasForeignKey("AdminId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Admin");
                 });
 
             modelBuilder.Entity("Domain.Entities.Budget", b =>
@@ -436,6 +583,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.RecurringExpense", b =>
                 {
                     b.HasOne("Domain.Entities.Category", "Category")
@@ -451,6 +609,17 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -471,6 +640,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("Expenses");
 
                     b.Navigation("RecurringExpenses");
+
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

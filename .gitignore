@@ -53,3 +53,11 @@ desktop.ini
 *.mdf
 *.ldf
 *.ndf
+
+# Environment variables - NEVER commit these
+.env
+.env.local
+.env.production
+
+# Docker
+docker-compose.override.yml

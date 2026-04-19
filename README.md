@@ -1,154 +1,137 @@
 # 💰 Smart Expense Tracker API
 
-A production-ready RESTful API for personal finance management — built with **ASP.NET Core 8** using **Clean Architecture**.
+A production-ready RESTful API for personal finance management.
+Built with **ASP.NET Core 8** · **Clean Architecture** · **SQL Server** · **Docker**
 
 ---
 
 ## 🚀 Features
 
-- 🔐 **JWT Authentication** — Register, Login, Logout with Token Blacklist
-- 💸 **Expense Management** — Full CRUD, Soft Delete, Restore, Search, Filter, Sort, Pagination
-- 📊 **Budget System** — Set monthly budgets per category with real-time tracking
-- 🧠 **Insights Engine** — Daily averages, category breakdowns & monthly trends
-- 📈 **Reports** — Monthly & Yearly reports with weekly breakdowns
-- 📤 **Export** — Export expenses to Excel
-- 🚨 **Smart Alerts** — Auto-triggered alerts with pagination, no duplicates
-- 🔁 **Recurring Expenses** — Auto-process monthly/weekly/yearly expenses
-- 👤 **User Profile** — View, update, change password, delete account
-- 🛡️ **Admin Panel** — Manage users & view system statistics
-- ⚡ **Rate Limiting** — Global + per-endpoint protection
-- 🗑️ **Soft Delete** — Recoverable expense deletion
+| Feature | Details |
+|---------|---------|
+| 🔐 Auth | JWT + Refresh Token + Token Blacklist + Password Reset |
+| 💸 Expenses | CRUD + Soft Delete + Restore + Search + Filter + Sort + Pagination |
+| 📊 Budgets | Monthly budgets per category with real-time tracking |
+| 🧠 Insights | Daily averages, category breakdowns, monthly trends |
+| 📈 Reports | Monthly + Yearly + Excel Export |
+| 🚨 Alerts | Smart alerts, no duplicates, pagination |
+| 🔁 Recurring | Auto-process daily via Background Job |
+| 👤 Profile | View + Update + Change Password + Currency |
+| 🛡️ Admin | Users CRUD + Role + Suspend + Expenses + Reports + Audit Log |
+| ⚡ Performance | DB-level filtering, no N+1 queries |
+| 🔒 Security | Rate Limiting + HTTPS + CORS + Input Validation |
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-ExpenseTracker/
-├── Domain/          → Entities only, zero dependencies
-├── Application/     → Business logic, Services, DTOs, Interfaces
-├── Infrastructure/  → EF Core, Repositories, JWT
-└── API/             → Controllers, Middleware, Swagger
+Domain/          → Entities, Constants, Exceptions (no dependencies)
+Application/     → Business Logic, Services, DTOs, Interfaces
+Infrastructure/  → EF Core, Repositories, JWT, Email, Export, Background Jobs
+API/             → Controllers, Middleware, Swagger
 ```
-
-**Patterns:** Clean Architecture · Repository Pattern · Service Layer · Dependency Injection
 
 ---
 
 ## ⚙️ Tech Stack
 
-| Technology | Purpose |
-|-----------|---------|
-| ASP.NET Core 8 | Web API |
-| Entity Framework Core 8 | ORM |
-| SQL Server | Database |
-| JWT Bearer | Authentication |
-| AutoMapper | Object mapping |
-| FluentValidation | Input validation |
-| Serilog | Structured logging |
-| ClosedXML | Excel export |
-| Swagger | API documentation |
-| Rate Limiter | Request throttling |
+`ASP.NET Core 8` · `Entity Framework Core` · `SQL Server` · `JWT` · `AutoMapper` · `FluentValidation` · `Serilog` · `ClosedXML` · `Swagger` · `Docker`
 
 ---
 
-## 📦 Getting Started
+## 🐳 Quick Start (Docker)
 
 ```bash
 # 1. Clone
 git clone https://github.com/HadiAljaami/ExpenseTracker.git
 cd ExpenseTracker
 
-# 2. Restore
-dotnet restore
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your values
 
-# 3. Update connection string in API/appsettings.json
+# 3. Run
+docker-compose up -d
 
-# 4. Migrate
-dotnet ef migrations add InitialCreate --project Infrastructure --startup-project API
-dotnet ef database update --project Infrastructure --startup-project API
-
-# 5. Run
-dotnet run --project API
+# API ready at: http://localhost:8080
+# Swagger UI:   http://localhost:8080
 ```
-
-Swagger UI: **http://localhost:5000**
 
 ---
 
-## 📋 API Endpoints
+## 💻 Local Development
 
-### Auth
+```bash
+dotnet restore
+dotnet ef migrations add InitialCreate --project Infrastructure --startup-project API
+dotnet ef database update --project Infrastructure --startup-project API
+dotnet run --project API
+# Swagger: http://localhost:5000
+```
+
+---
+
+## 🔑 Default Admin Credentials
+
+```
+Email:    admin@expensetracker.com
+Password: Admin@123456
+```
+⚠️ **Change these immediately in production via `.env` file!**
+
+---
+
+## 📋 API Reference (v1)
+
+### Auth `/api/v1/auth`
+| Method | Endpoint | Auth |
+|--------|----------|------|
+| POST | `/register` | ❌ |
+| POST | `/login` | ❌ |
+| POST | `/refresh-token` | ❌ |
+| POST | `/logout` | ✅ |
+| POST | `/forgot-password` | ❌ |
+| POST | `/reset-password` | ❌ |
+
+### Expenses `/api/v1/expenses`
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Register |
-| POST | `/api/auth/login` | Login |
-| POST | `/api/auth/logout` | Logout (revoke token) |
+| GET | `/` | List with full filtering |
+| GET | `/{id}` | Get by ID |
+| POST | `/` | Create |
+| PUT | `/{id}` | Update |
+| DELETE | `/{id}` | Soft delete |
+| GET | `/deleted` | View deleted |
+| PATCH | `/{id}/restore` | Restore |
 
-### Expenses
+### Admin `/api/v1/admin` (Role: Admin)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/expenses?search=&categoryId=&fromDate=&sortBy=` | List with full filtering |
-| GET | `/api/expenses/{id}` | Get by ID |
-| POST | `/api/expenses` | Create |
-| PUT | `/api/expenses/{id}` | Update |
-| DELETE | `/api/expenses/{id}` | Soft delete |
-| GET | `/api/expenses/deleted` | View deleted |
-| PATCH | `/api/expenses/{id}/restore` | Restore deleted |
+| GET | `/users` | All users (paginated + filtered) |
+| GET | `/users/{id}` | User details |
+| POST | `/users` | Create user |
+| PATCH | `/users/{id}/role` | Change role |
+| PATCH | `/users/{id}/suspend` | Suspend/unsuspend |
+| DELETE | `/users/{id}` | Delete user |
+| GET | `/expenses` | All expenses (filtered) |
+| DELETE | `/expenses/{id}` | Delete expense |
+| GET | `/stats` | System statistics |
+| GET | `/stats/monthly` | Monthly growth |
+| GET | `/reports` | Full system report |
+| GET | `/audit-logs` | Admin audit trail |
 
-### Budgets
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/budgets` | List budgets |
-| POST | `/api/budgets` | Create |
-| PUT | `/api/budgets/{id}` | Update |
-| DELETE | `/api/budgets/{id}` | Delete |
-
-### Insights & Reports
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/insights` | Financial insights |
-| GET | `/api/reports/monthly` | Monthly report |
-| GET | `/api/reports/yearly` | Yearly report |
-| GET | `/api/reports/export/excel` | Export to Excel |
-
-### Alerts
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/alerts` | Paged alerts |
-| GET | `/api/alerts?unreadOnly=true` | Unread only |
-| PATCH | `/api/alerts/{id}/read` | Mark as read |
-| PATCH | `/api/alerts/read-all` | Mark all as read |
-
-### User Profile
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/users/me` | Get profile |
-| PUT | `/api/users/me` | Update profile + currency |
-| PUT | `/api/users/me/change-password` | Change password |
-| DELETE | `/api/users/me` | Delete account |
-
-### Recurring Expenses
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/recurring-expenses` | List all |
-| POST | `/api/recurring-expenses` | Create |
-| PATCH | `/api/recurring-expenses/{id}/toggle` | Toggle active |
-| DELETE | `/api/recurring-expenses/{id}` | Delete |
-
-### Admin (Role: Admin)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/users` | All users |
-| GET | `/api/admin/users/{id}` | User details |
-| DELETE | `/api/admin/users/{id}` | Delete user |
-| GET | `/api/admin/stats` | System statistics |
+### Other Endpoints
+- `GET /api/v1/budgets` · `GET /api/v1/insights` · `GET /api/v1/reports/monthly`
+- `GET /api/v1/reports/yearly` · `GET /api/v1/reports/export/excel`
+- `GET /api/v1/alerts` · `GET /api/v1/users/me` · `GET /api/v1/categories`
+- `GET /api/v1/recurring-expenses` · `GET /health`
 
 ---
 
 ## 🗄️ Default Categories
 
-🍔 Food & Dining · 🚗 Transport · 💡 Bills · 🎬 Entertainment · 🏥 Healthcare · 🛍️ Shopping · 📚 Education · 📦 Other
+🍔 Food · 🚗 Transport · 💡 Bills · 🎬 Entertainment · 🏥 Healthcare · 🛍️ Shopping · 📚 Education · 📦 Other
 
 ---
 

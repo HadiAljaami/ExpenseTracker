@@ -14,6 +14,9 @@ public class AppDbContext : DbContext
     public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<RevokedToken> RevokedTokens => Set<RevokedToken>();
     public DbSet<RecurringExpense> RecurringExpenses => Set<RecurringExpense>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,6 +28,8 @@ public class AppDbContext : DbContext
             e.Property(u => u.FullName).HasMaxLength(100);
             e.Property(u => u.Email).HasMaxLength(150);
             e.Property(u => u.Currency).HasMaxLength(10).HasDefaultValue("SAR");
+            e.Property(u => u.Role).HasMaxLength(20).HasDefaultValue("User");
+            e.Property(u => u.IsSuspended).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<Expense>(e =>
@@ -58,6 +63,22 @@ public class AppDbContext : DbContext
             e.HasIndex(x => x.Token);
         });
 
+        modelBuilder.Entity<RefreshToken>(e =>
+        {
+            e.Property(x => x.Token).HasMaxLength(200);
+            e.HasIndex(x => x.Token);
+            e.HasOne(x => x.User).WithMany(u => u.RefreshTokens)
+                .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PasswordResetToken>(e =>
+        {
+            e.Property(x => x.Token).HasMaxLength(200);
+            e.HasIndex(x => x.Token);
+            e.HasOne(x => x.User).WithMany()
+                .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<RecurringExpense>(e =>
         {
             e.Property(x => x.Amount).HasPrecision(18, 2);
@@ -67,7 +88,15 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Seed categories
+        modelBuilder.Entity<AuditLog>(e =>
+        {
+            e.Property(x => x.Action).HasMaxLength(100);
+            e.Property(x => x.EntityType).HasMaxLength(50);
+            e.Property(x => x.AdminEmail).HasMaxLength(150);
+            e.HasOne(x => x.Admin).WithMany().HasForeignKey(x => x.AdminId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Admin user is seeded via DataSeeder at startup (not here)
         modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Food & Dining", Icon = "🍔", Color = "#FF6B6B", CreatedAt = DateTime.UtcNow },
             new Category { Id = 2, Name = "Transport", Icon = "🚗", Color = "#4ECDC4", CreatedAt = DateTime.UtcNow },

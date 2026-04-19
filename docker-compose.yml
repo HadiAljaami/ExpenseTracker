@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  # ── SQL Server ──────────────────────────────────────────────────────────────
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: expense_tracker_db
+    environment:
+      SA_PASSWORD: ${DB_PASSWORD}
+      ACCEPT_EULA: Y
+      MSSQL_PID: Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "${DB_PASSWORD}" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ── API ─────────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: expense_tracker_api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=ExpenseTrackerDb;User=SA;Password=${DB_PASSWORD};TrustServerCertificate=True;"
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Jwt__AccessTokenExpiryMinutes: ${JWT_ACCESS_EXPIRY_MINUTES:-60}
+      Jwt__RefreshTokenExpiryDays: ${JWT_REFRESH_EXPIRY_DAYS:-7}
+      Email__SmtpHost: ${SMTP_HOST}
+      Email__SmtpPort: ${SMTP_PORT:-587}
+      Email__SmtpUser: ${SMTP_USER}
+      Email__SmtpPass: ${SMTP_PASS}
+      Email__FromEmail: ${SMTP_FROM_EMAIL}
+      Email__FromName: ${SMTP_FROM_NAME:-"Smart Expense Tracker"}
+      App__FrontendUrl: ${FRONTEND_URL:-http://localhost:3000}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@expensetracker.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_NAME: ${ADMIN_NAME:-"System Admin"}
+    ports:
+      - "8080:8080"
+    volumes:
+      - api_logs:/app/logs
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+  api_logs:

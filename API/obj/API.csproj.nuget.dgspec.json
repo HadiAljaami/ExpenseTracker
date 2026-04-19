@@ -57,6 +57,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AspNetCore.HealthChecks.SqlServer": {
+              "target": "Package",
+              "version": "[8.0.1, )"
+            },
             "AutoMapper": {
               "target": "Package",
               "version": "[13.0.1, )"

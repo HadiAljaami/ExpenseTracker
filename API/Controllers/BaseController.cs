@@ -6,6 +6,7 @@ namespace API.Controllers;
 
 [Authorize]
 [ApiController]
+[Route("api/v1/[controller]")]
 public abstract class BaseController : ControllerBase
 {
     protected int UserId =>

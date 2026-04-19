@@ -7,6 +7,9 @@ public interface IUserRepository
     Task<User?> GetByEmailAsync(string email);
     Task<User?> GetByIdAsync(int id);
     Task<List<User>> GetAllAsync();
+    Task<(List<User> Items, int Total)> GetPagedAsync(string? search, string? role, bool? isSuspended, string sortBy, string sortDir, int page, int pageSize);
+    Task<Dictionary<int, (int Count, decimal Total)>> GetUsersExpenseStatsAsync(List<int> userIds);
+    Task<int> GetCountByMonthAsync(int month, int year);
     Task AddAsync(User user);
     Task DeleteAsync(User user);
     Task SaveChangesAsync();
@@ -17,8 +20,11 @@ public interface IExpenseRepository
     Task<Expense?> GetByIdAsync(int id);
     Task<Expense?> GetByIdIncludeDeletedAsync(int id);
     Task<List<Expense>> GetUserExpensesAsync(int userId, DateTime? from = null, DateTime? to = null);
+    Task<(List<Expense> Items, int Total)> GetFilteredAsync(int userId, int? categoryId, DateTime? from, DateTime? to, decimal? minAmount, decimal? maxAmount, string? search, string sortBy, string sortDir, int page, int pageSize);
     Task<List<Expense>> GetDeletedExpensesAsync(int userId);
     Task<List<Expense>> GetAllExpensesAsync(DateTime? from = null, DateTime? to = null);
+    Task<(List<Expense> Items, int Total, decimal TotalAmount)> GetAllFilteredAsync(int? userId, int? categoryId, DateTime? from, DateTime? to, string? search, string sortBy, string sortDir, int page, int pageSize);
+    Task<Dictionary<int, (int Count, decimal Total)>> GetExpenseStatsByUserIdsAsync(List<int> userIds);
     Task AddAsync(Expense expense);
     Task UpdateAsync(Expense expense);
     Task DeleteAsync(Expense expense);
@@ -75,5 +81,28 @@ public interface IRecurringExpenseRepository
     Task AddAsync(RecurringExpense recurringExpense);
     Task UpdateAsync(RecurringExpense recurringExpense);
     Task DeleteAsync(RecurringExpense recurringExpense);
+    Task SaveChangesAsync();
+}
+
+public interface IRefreshTokenRepository
+{
+    Task AddAsync(RefreshToken token);
+    Task<RefreshToken?> GetByTokenAsync(string token);
+    Task<List<RefreshToken>> GetUserTokensAsync(int userId);
+    Task SaveChangesAsync();
+}
+
+public interface IPasswordResetRepository
+{
+    Task AddAsync(PasswordResetToken token);
+    Task<PasswordResetToken?> GetByTokenAsync(string token);
+    Task DeleteAsync(PasswordResetToken token);
+    Task SaveChangesAsync();
+}
+
+public interface IAuditLogRepository
+{
+    Task AddAsync(AuditLog log);
+    Task<(List<AuditLog> Items, int Total)> GetPagedAsync(int page, int pageSize, int? adminId = null, string? action = null);
     Task SaveChangesAsync();
 }

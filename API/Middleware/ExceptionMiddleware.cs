@@ -1,3 +1,5 @@
+using Application.Common;
+using Domain.Exceptions;
 using System.Net;
 using System.Text.Json;
 
@@ -31,22 +33,22 @@ public class ExceptionMiddleware
     {
         var (statusCode, message) = ex switch
         {
+            NotFoundException => (HttpStatusCode.NotFound, ex.Message),
+            ForbiddenException => (HttpStatusCode.Forbidden, ex.Message),
+            BusinessException => (HttpStatusCode.BadRequest, ex.Message),
+            ConflictException => (HttpStatusCode.Conflict, ex.Message),
+            // Legacy exceptions (backward compatibility)
             KeyNotFoundException => (HttpStatusCode.NotFound, ex.Message),
             UnauthorizedAccessException => (HttpStatusCode.Forbidden, ex.Message),
             InvalidOperationException => (HttpStatusCode.BadRequest, ex.Message),
-            _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred. Please try again.")
+            _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred.")
         };
 
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
 
-        var response = JsonSerializer.Serialize(new
-        {
-            success = false,
-            statusCode = (int)statusCode,
-            message
-        });
-
-        return context.Response.WriteAsync(response);
+        var response = ApiResponse<object>.Fail((int)statusCode, message);
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        return context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
     }
 }

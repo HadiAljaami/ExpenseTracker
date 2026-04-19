@@ -1,6 +1,7 @@
 using Application.DTOs.Budgets;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Exceptions;
 
 namespace Application.Services;
 
@@ -21,37 +22,20 @@ public class BudgetService : IBudgetService
     {
         var budget = new Budget
         {
-            UserId = userId,
-            CategoryId = dto.CategoryId,
-            MonthlyLimit = dto.MonthlyLimit,
-            Month = dto.Month,
-            Year = dto.Year
+            UserId = userId, CategoryId = dto.CategoryId,
+            MonthlyLimit = dto.MonthlyLimit, Month = dto.Month, Year = dto.Year
         };
-
         await _budgetRepo.AddAsync(budget);
         await _budgetRepo.SaveChangesAsync();
-
         return await EnrichBudget(budget);
-    }
-
-    public async Task<List<BudgetResponseDto>> GetAllAsync(int userId, int month, int year)
-    {
-        var budgets = await _budgetRepo.GetUserBudgetsAsync(userId, month, year);
-        var result = new List<BudgetResponseDto>();
-
-        foreach (var b in budgets)
-            result.Add(await EnrichBudget(b));
-
-        return result;
     }
 
     public async Task<BudgetResponseDto> UpdateAsync(int userId, int budgetId, CreateBudgetDto dto)
     {
         var budget = await _budgetRepo.GetByIdAsync(budgetId)
-            ?? throw new KeyNotFoundException("Budget not found.");
+            ?? throw new NotFoundException("Budget", budgetId);
 
-        if (budget.UserId != userId)
-            throw new UnauthorizedAccessException("Access denied.");
+        if (budget.UserId != userId) throw new ForbiddenException();
 
         budget.CategoryId = dto.CategoryId;
         budget.MonthlyLimit = dto.MonthlyLimit;
@@ -61,18 +45,22 @@ public class BudgetService : IBudgetService
 
         await _budgetRepo.UpdateAsync(budget);
         await _budgetRepo.SaveChangesAsync();
-
         return await EnrichBudget(budget);
+    }
+
+    public async Task<List<BudgetResponseDto>> GetAllAsync(int userId, int month, int year)
+    {
+        var budgets = await _budgetRepo.GetUserBudgetsAsync(userId, month, year);
+        var result = new List<BudgetResponseDto>();
+        foreach (var b in budgets) result.Add(await EnrichBudget(b));
+        return result;
     }
 
     public async Task DeleteAsync(int userId, int budgetId)
     {
         var budget = await _budgetRepo.GetByIdAsync(budgetId)
-            ?? throw new KeyNotFoundException("Budget not found.");
-
-        if (budget.UserId != userId)
-            throw new UnauthorizedAccessException("Access denied.");
-
+            ?? throw new NotFoundException("Budget", budgetId);
+        if (budget.UserId != userId) throw new ForbiddenException();
         await _budgetRepo.DeleteAsync(budget);
         await _budgetRepo.SaveChangesAsync();
     }
@@ -81,14 +69,12 @@ public class BudgetService : IBudgetService
     {
         var from = new DateTime(budget.Year, budget.Month, 1);
         var to = from.AddMonths(1).AddDays(-1);
-
         var expenses = await _expenseRepo.GetUserExpensesAsync(budget.UserId, from, to);
 
         if (budget.CategoryId.HasValue)
             expenses = expenses.Where(e => e.CategoryId == budget.CategoryId).ToList();
 
         var spent = expenses.Sum(e => e.Amount);
-
         string? categoryName = null;
         if (budget.CategoryId.HasValue)
         {
@@ -98,12 +84,9 @@ public class BudgetService : IBudgetService
 
         return new BudgetResponseDto
         {
-            Id = budget.Id,
-            CategoryName = categoryName,
-            MonthlyLimit = budget.MonthlyLimit,
-            TotalSpent = spent,
-            Month = budget.Month,
-            Year = budget.Year
+            Id = budget.Id, CategoryName = categoryName,
+            MonthlyLimit = budget.MonthlyLimit, TotalSpent = spent,
+            Month = budget.Month, Year = budget.Year
         };
     }
 }

@@ -1,4 +1,5 @@
 using Application.DTOs;
+using Application.DTOs.Admin;
 using Application.DTOs.Auth;
 using Application.DTOs.Expenses;
 using Application.DTOs.Budgets;
@@ -13,7 +14,10 @@ public interface IAuthService
 {
     Task<AuthResponseDto> RegisterAsync(RegisterDto dto);
     Task<AuthResponseDto> LoginAsync(LoginDto dto);
-    Task LogoutAsync(string token);
+    Task<AuthResponseDto> RefreshTokenAsync(string refreshToken);
+    Task LogoutAsync(string accessToken, string refreshToken);
+    Task ForgotPasswordAsync(string email);
+    Task ResetPasswordAsync(ResetPasswordDto dto);
 }
 
 public interface IExpenseService
@@ -66,10 +70,25 @@ public interface IUserService
 
 public interface IAdminService
 {
-    Task<List<AdminUserDto>> GetAllUsersAsync();
+    // Users
+    Task<PagedAdminUsersDto> GetAllUsersAsync(AdminUserFilterDto filter);
     Task<AdminUserDto> GetUserByIdAsync(int userId);
-    Task DeleteUserAsync(int userId);
+    Task<AdminUserDto> CreateUserAsync(CreateAdminUserDto dto);
+    Task DeleteUserAsync(int adminId, string adminEmail, int userId, string? ipAddress);
+    Task<AdminUserDto> ChangeUserRoleAsync(int adminId, string adminEmail, int userId, string role, string? ipAddress);
+    Task<AdminUserDto> ToggleSuspendUserAsync(int adminId, string adminEmail, int userId, string? ipAddress);
+
+    // Expenses
+    Task<PagedAdminExpensesDto> GetAllExpensesAsync(AdminExpenseFilterDto filter);
+    Task DeleteExpenseAsync(int adminId, string adminEmail, int expenseId, string? ipAddress);
+
+    // Reports
     Task<AdminStatsDto> GetSystemStatsAsync();
+    Task<List<SystemMonthlyDto>> GetMonthlyGrowthAsync(int year);
+    Task<AdminSystemReportDto> GetSystemReportAsync(int month, int year);
+
+    // Audit Log
+    Task<PagedAuditLogsDto> GetAuditLogsAsync(int page, int pageSize, int? adminId, string? action);
 }
 
 public interface IRecurringExpenseService
